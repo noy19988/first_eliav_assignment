@@ -7,7 +7,7 @@ const app = express();
 app.use(bodyParser.json()); // Middleware לטיפול בבקשות JSON
 
 // חיבור ל-MongoDB
-mongoose.connect('mongodb://127.0.0.1:27017/rest-api', {
+mongoose.connect('mongodb://localhost:27017/web_class', {
     // useNewUrlParser: true,
     // useUnifiedTopology: true
 });
