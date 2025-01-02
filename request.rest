@@ -1,4 +1,4 @@
-# הוספת פוסט חדש
+###
 POST http://localhost:3000/post
 Content-Type: application/json
 
@@ -8,19 +8,16 @@ Content-Type: application/json
     "sender": "noy19988"
 }
 
----
 
-# קבלת כל הפוסטים
+###
 GET http://localhost:3000/post
 
----
 
-# קבלת פוסט לפי ID
+###
 GET http://localhost:3000/post/1
 
----
 
-# עדכון פוסט
+###
 PUT http://localhost:3000/post/1
 Content-Type: application/json
 
@@ -29,14 +26,14 @@ Content-Type: application/json
     "content": "Updated content"
 }
 
----
 
-# חיפוש פוסטים לפי שולח
+
+###
 GET http://localhost:3000/post/search?sender=user123
 
----
 
-# הוספת תגובה חדשה
+
+###
 POST http://localhost:3000/comment
 Content-Type: application/json
 
@@ -46,14 +43,14 @@ Content-Type: application/json
     "author": "ron22"
 }
 
----
 
-# קבלת כל התגובות לפוסט
+
+###
 GET http://localhost:3000/comment/post/1
 
----
 
-# עדכון תגובה
+
+###
 PUT http://localhost:3000/comment/1
 Content-Type: application/json
 
@@ -61,7 +58,11 @@ Content-Type: application/json
     "content": "Updated content"
 }
 
----
 
-# מחיקת תגובה
+
+###
 DELETE http://localhost:3000/comment/1
+
+###
+DELETE http://localhost:3000/post/6776d1afaf0b5f10583777e4
+

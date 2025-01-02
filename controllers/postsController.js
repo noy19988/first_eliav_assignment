@@ -3,10 +3,11 @@ const Post = require('../models/post');
 
 exports.addPost = async (req, res) => {
     try {
+        console.log(req.body); 
         const post = new Post(req.body);
         await post.save();
         console.log('Post saved:', post); 
-        res.status(201).send(post); 
+        res.status(201).send(post);
     } catch (error) {
         res.status(400).send(error);
     }
