@@ -1,24 +1,23 @@
 const express = require('express');
 const router = express.Router();
+const Comment = require('../models/comment'); // ייבוא המודל לתגובות
+const {
+    addComment,
+    getCommentsByPost,
+    updateComment,
+    deleteComment
+} = require('../controllers/commentsController'); // ייבוא הפונקציות מה-Controller
 
 // הוספת תגובה
-router.post('/', (req, res) => {
-    res.send('Add a new comment');
-});
+router.post('/', addComment);
 
 // קבלת כל התגובות לפוסט מסוים
-router.get('/post/:postId', (req, res) => {
-    res.send(`Get all comments for post ID: ${req.params.postId}`);
-});
+router.get('/post/:postId', getCommentsByPost);
 
 // עדכון תגובה
-router.put('/:id', (req, res) => {
-    res.send(`Update comment with ID: ${req.params.id}`);
-});
+router.put('/:id', updateComment);
 
 // מחיקת תגובה
-router.delete('/:id', (req, res) => {
-    res.send(`Delete comment with ID: ${req.params.id}`);
-});
+router.delete('/:id', deleteComment);
 
 module.exports = router;
