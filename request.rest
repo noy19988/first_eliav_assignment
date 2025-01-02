@@ -3,9 +3,9 @@ POST http://localhost:3000/post
 Content-Type: application/json
 
 {
-    "title": "Post",
-    "content": "content of my first post",
-    "sender": "noy19988"
+    "title": "presen post",
+    "content": "content of my present post",
+    "sender": "eliav"
 }
 
 
@@ -14,22 +14,26 @@ GET http://localhost:3000/post
 
 
 ###
-GET http://localhost:3000/post/1
+GET http://localhost:3000/post/677700e81e5efd44e9e3a15e
+
+###
+GET http://localhost:3000/post?sender=eliav
 
 
 ###
-PUT http://localhost:3000/post/1
+PUT http://localhost:3000/post/677700e81e5efd44e9e3a15e
 Content-Type: application/json
 
 {
-    "title": "Updated Title",
+    "title": "Updated Tללitle",
     "content": "Updated content"
 }
 
 
 
-###
-GET http://localhost:3000/post/search?sender=user123
+
+
+
 
 
 
