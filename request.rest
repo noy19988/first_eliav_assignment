@@ -1,0 +1,67 @@
+# הוספת פוסט חדש
+POST http://localhost:3000/post
+Content-Type: application/json
+
+{
+    "title": "First Post",
+    "content": "This is the content of my first post",
+    "sender": "user123"
+}
+
+---
+
+# קבלת כל הפוסטים
+GET http://localhost:3000/post
+
+---
+
+# קבלת פוסט לפי ID
+GET http://localhost:3000/post/1
+
+---
+
+# עדכון פוסט
+PUT http://localhost:3000/post/1
+Content-Type: application/json
+
+{
+    "title": "Updated Post Title",
+    "content": "Updated content of the post"
+}
+
+---
+
+# חיפוש פוסטים לפי שולח
+GET http://localhost:3000/post/search?sender=user123
+
+---
+
+# הוספת תגובה חדשה
+POST http://localhost:3000/comment
+Content-Type: application/json
+
+{
+    "postId": "1",
+    "content": "Great post! I love it.",
+    "author": "commenter1"
+}
+
+---
+
+# קבלת כל התגובות לפוסט
+GET http://localhost:3000/comment/post/1
+
+---
+
+# עדכון תגובה
+PUT http://localhost:3000/comment/1
+Content-Type: application/json
+
+{
+    "content": "Updated comment content"
+}
+
+---
+
+# מחיקת תגובה
+DELETE http://localhost:3000/comment/1

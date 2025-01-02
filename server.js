@@ -8,9 +8,11 @@ app.use(bodyParser.json()); // Middleware לטיפול בבקשות JSON
 
 // חיבור ל-MongoDB
 mongoose.connect('mongodb://127.0.0.1:27017/rest-api', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+    // useNewUrlParser: true,
+    // useUnifiedTopology: true
 });
+
+
 mongoose.connection.on('connected', () => {
     console.log('Connected to MongoDB');
 });
