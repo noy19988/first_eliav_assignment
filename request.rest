@@ -3,9 +3,9 @@ POST http://localhost:3000/post
 Content-Type: application/json
 
 {
-    "title": "First Posttttt",
-    "content": "This is the content of my first post 222",
-    "sender": "user123 222"
+    "title": "First Post",
+    "content": "This is the content of my first post",
+    "sender": "user123"
 }
 
 ---
@@ -25,8 +25,8 @@ PUT http://localhost:3000/post/1
 Content-Type: application/json
 
 {
-    "title": "Updated Post Title 222",
-    "content": "Updated content of the post 222"
+    "title": "Updated Post Title",
+    "content": "Updated content of the post"
 }
 
 ---
@@ -42,8 +42,8 @@ Content-Type: application/json
 
 {
     "postId": "1",
-    "content": "Great post! I love it. 222",
-    "author": "commenter1 222"
+    "content": "Great post! I love it.",
+    "author": "commenter1"
 }
 
 ---
@@ -58,7 +58,7 @@ PUT http://localhost:3000/comment/1
 Content-Type: application/json
 
 {
-    "content": "Updated comment content 222"
+    "content": "Updated comment content"
 }
 
 ---
