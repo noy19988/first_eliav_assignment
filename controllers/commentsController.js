@@ -1,6 +1,6 @@
 const Comment = require('../models/comment'); // ייבוא המודל לתגובות
 
-// הוספת תגובה חדשה
+
 exports.addComment = async (req, res) => {
     try {
         const comment = new Comment(req.body);
@@ -11,7 +11,7 @@ exports.addComment = async (req, res) => {
     }
 };
 
-// קבלת כל התגובות לפוסט מסוים
+
 exports.getCommentsByPost = async (req, res) => {
     try {
         const comments = await Comment.find({ postId: req.params.postId });
@@ -21,7 +21,7 @@ exports.getCommentsByPost = async (req, res) => {
     }
 };
 
-// עדכון תגובה
+
 exports.updateComment = async (req, res) => {
     try {
         const comment = await Comment.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -32,7 +32,7 @@ exports.updateComment = async (req, res) => {
     }
 };
 
-// מחיקת תגובה
+
 exports.deleteComment = async (req, res) => {
     try {
         const comment = await Comment.findByIdAndDelete(req.params.id);

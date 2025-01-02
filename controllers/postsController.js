@@ -1,18 +1,18 @@
-const Post = require('../models/post'); // ייבוא המודל לפוסטים
+const Post = require('../models/post'); 
 
-// הוספת פוסט חדש
+
 exports.addPost = async (req, res) => {
     try {
         const post = new Post(req.body);
         await post.save();
-        console.log('Post saved:', post); // הדפסה לקונסול
-        res.status(201).send(post); // מחזיר את הפוסט שנשמר, כולל ה-ID
+        console.log('Post saved:', post); 
+        res.status(201).send(post); 
     } catch (error) {
         res.status(400).send(error);
     }
 };
 
-// קבלת כל הפוסטים
+
 exports.getAllPosts = async (req, res) => {
     try {
         const posts = await Post.find();
@@ -22,7 +22,7 @@ exports.getAllPosts = async (req, res) => {
     }
 };
 
-// קבלת פוסט לפי ID
+
 exports.getPostById = async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -33,7 +33,7 @@ exports.getPostById = async (req, res) => {
     }
 };
 
-// עדכון פוסט
+
 exports.updatePost = async (req, res) => {
     try {
         const post = await Post.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -44,7 +44,7 @@ exports.updatePost = async (req, res) => {
     }
 };
 
-// חיפוש פוסטים לפי שולח
+
 exports.getPostsBySender = async (req, res) => {
     try {
         const posts = await Post.find({ sender: req.query.sender });
@@ -54,7 +54,7 @@ exports.getPostsBySender = async (req, res) => {
     }
 };
 
-// מחיקת פוסט
+
 exports.deletePost = async (req, res) => {
     try {
         const post = await Post.findByIdAndDelete(req.params.id);
