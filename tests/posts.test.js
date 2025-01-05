@@ -114,20 +114,20 @@ describe('Posts API', () => {
         expect(deletedPost).toBeNull();
     });
 
-    it('should fetch posts by author', async () => {
-        const post1 = new Post({ title: 'Post 1', content: 'Content 1', author: testUser });
-        const post2 = new Post({ title: 'Post 2', content: 'Content 2', author: testUser });
-        await post1.save();
-        await post2.save();
-    
-        const response = await request(app).get(`/post/sender/${testUser}`);
-    
-        console.log('Response body:', response.body);
-    
-        expect(response.status).toBe(200);
-        expect(response.body.length).toBe(2);
-        expect(response.body[0]).toMatchObject({ title: 'Post 1', content: 'Content 1' });
-        expect(response.body[1]).toMatchObject({ title: 'Post 2', content: 'Content 2' });
-    });
-    
+ it('should fetch posts by author', async () => {
+    const post1 = new Post({ title: 'Post 1', content: 'Content 1', author: testUser });
+    const post2 = new Post({ title: 'Post 2', content: 'Content 2', author: testUser });
+    await post1.save();
+    await post2.save();
+
+    const response = await request(app).get(`/post/sender/${testUser}`);
+
+    console.log('Response body:', response.body);
+
+    expect(response.status).toBe(200);
+    expect(response.body.length).toBe(2);
+    expect(response.body[0]).toMatchObject({ title: 'Post 1', content: 'Content 1' });
+    expect(response.body[1]).toMatchObject({ title: 'Post 2', content: 'Content 2' });
+});
+
 });

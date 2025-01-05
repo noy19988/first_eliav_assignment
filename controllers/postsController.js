@@ -84,8 +84,8 @@ exports.updatePost = async (req, res) => {
 };
 
 exports.getPostsBySender = async (req, res) => {
-    const sender = req.query.sender;
-    console.log('Sender received:', sender); 
+    const sender = req.params.sender; // שינוי ל-req.params.sender
+    console.log('Sender received:', sender);
 
     try {
         console.log('yala ya beitar');
@@ -94,8 +94,8 @@ exports.getPostsBySender = async (req, res) => {
             return res.status(400).send({ message: 'Sender query parameter is required' });
         }
 
-        const posts = await Post.find({ sender: sender });
-        console.log('Posts found:', posts); 
+        const posts = await Post.find({ author: sender }); // שימוש נכון ב-author ולא ב-sender
+        console.log('Posts found:', posts);
 
         if (posts.length === 0) {
             return res.status(404).send({ message: `No posts found for sender: ${sender}` });
@@ -103,10 +103,11 @@ exports.getPostsBySender = async (req, res) => {
 
         return res.status(200).send(posts);
     } catch (error) {
-        console.log('Error:', error); 
+        console.log('Error:', error);
         res.status(500).send({ error: error.message });
     }
 };
+
 
 
 
