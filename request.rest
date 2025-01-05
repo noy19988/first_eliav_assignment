@@ -70,3 +70,101 @@ DELETE http://localhost:3000/comment/1
 ###
 DELETE http://localhost:3000/post/6776d1afaf0b5f10583777e4
 
+
+### Register a new user
+POST http://localhost:3000/users/register
+Content-Type: application/json
+
+{
+  "username": "ron1",
+  "email": "ron1@gmail.com",
+  "password": "123456"
+}
+
+### Login a user
+POST http://localhost:3000/users/login
+Content-Type: application/json
+
+{
+  
+  "email": "ron1@gmail.com",
+  "password": "123456"
+}
+
+
+### Get all users
+GET http://localhost:3000/users
+Authorization: Bearer <your_token_here>
+
+
+### Logout a user
+POST http://localhost:3000/users/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdhODBkNmM5ODEyNDVjNTQ1NWE2ODciLCJpYXQiOjE3MzYwODE2MzksImV4cCI6MTczNjY4NjQzOX0.CFYOjlp82tM4gjAQm1_8fpBsIblhs3QBSZmWnWofGeo"
+}
+
+### Refresh a user token
+
+POST http://localhost:3000/users/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "<your_refresh_token_here>"
+}
+
+### Create a new post with an access token
+POST http://localhost:3000/post
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdhOGQyNTlmZTEwMzZjOWI2ZWEyN2YiLCJpYXQiOjE3MzYwODQ3ODAsImV4cCI6MTczNjE3MTE4MH0.d5BuvijRRBzKkeBc6DU2vCgw0UvE6z2OV72Qb0tBrVw
+
+{
+  "title": "My First Post",
+  "content": "This is the content of my first post.",
+  "author": "677a8d259fe1036c9b6ea27f"
+}
+
+
+### update a post with an access token
+
+PUT http://localhost:3000/post/677a8a8ec74320900f37d65b
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdhODBkNmM5ODEyNDVjNTQ1NWE2ODciLCJpYXQiOjE3MzYwODQwMTYsImV4cCI6MTczNjE3MDQxNn0.9I-SFl0Tvw8N-_hxNRbhl2V0Uqaiau4ES70soN6qwIA
+
+{
+  "title": "Updated Title",
+  "content": "Updated content of tshe post.",
+  "author": "677a80d6c981245c5455a687"
+  
+}
+
+### delete a post with an access token
+
+DELETE http://localhost:3000/post/677a8a8ec74320900f37d65b
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdhODBkNmM5ODEyNDVjNTQ1NWE2ODciLCJpYXQiOjE3MzYwODQwMTYsImV4cCI6MTczNjE3MDQxNn0.9I-SFl0Tvw8N-_hxNRbhl2V0Uqaiau4ES70soN6qwIA
+
+### Create a new comment with an access token
+POST http://localhost:3000/comment
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdhOGQyNTlmZTEwMzZjOWI2ZWEyN2YiLCJpYXQiOjE3MzYwODQ3ODAsImV4cCI6MTczNjE3MTE4MH0.d5BuvijRRBzKkeBc6DU2vCgw0UvE6z2OV72Qb0tBrVw
+
+{
+  "postId": "677a8e049fe1036c9b6ea284",
+  "content": "This is a comment on the post.",
+  "author": "677a80d6c981245c5455a687"
+}
+
+### Update a comment with an access token
+PUT http://localhost:3000/comment/677a8ed59fe1036c9b6ea28c
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdhOGQyNTlmZTEwMzZjOWI2ZWEyN2YiLCJpYXQiOjE3MzYwODQ3ODAsImV4cCI6MTczNjE3MTE4MH0.d5BuvijRRBzKkeBc6DU2vCgw0UvE6z2OV72Qb0tBrVw
+
+{
+  "content": "Updated comment content."
+}
+
+### Delete a comment with an access token
+DELETE http://localhost:3000/comment/677a8ed59fe1036c9b6ea28c
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdhOGQyNTlmZTEwMzZjOWI2ZWEyN2YiLCJpYXQiOjE3MzYwODQ3ODAsImV4cCI6MTczNjE3MTE4MH0.d5BuvijRRBzKkeBc6DU2vCgw0UvE6z2OV72Qb0tBrVw
+

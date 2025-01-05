@@ -1,4 +1,31 @@
 const Post = require('../models/post'); 
+const User = require('../models/user');
+
+// יצירת פוסט חדש
+exports.createPost = async (req, res) => {
+    const { title, content } = req.body;
+    const userId = req.userId; // נניח ש-authMiddleware מגדיר userId
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const newPost = new Post({
+            title,
+            content,
+            author: userId,
+        });
+
+        await newPost.save();
+        res.status(201).json({ message: 'Post created successfully', post: newPost });
+    } catch (error) {
+        console.error('Error creating post:', error);
+        res.status(500).json({ message: 'Error creating post', error });
+    }
+};
+
 
 
 exports.addPost = async (req, res) => {
@@ -80,6 +107,7 @@ exports.getPostsBySender = async (req, res) => {
         res.status(500).send({ error: error.message });
     }
 };
+
 
 
 

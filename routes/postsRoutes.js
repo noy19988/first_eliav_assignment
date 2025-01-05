@@ -1,30 +1,31 @@
 const express = require('express');
 const router = express.Router();
-const Post = require('../models/post'); // ייבוא המודל לפוסטים
-const postController = require('../controllers/postsController'); // ייבוא ה-Controller של הפוסטים
-
-
+const authMiddleware = require('../middleware/authMiddleware'); // Middleware לאימות
 const {
     addPost,
     getAllPosts,
     getPostById,
     updatePost,
     getPostsBySender,
-    deletePost 
+    deletePost
 } = require('../controllers/postsController');
 
-router.post('/', addPost);
+// יצירת פוסט חדש (דורש אימות)
+router.post('/', authMiddleware, addPost);
 
+// קריאה לכל הפוסטים
 router.get('/', getAllPosts);
 
+// קריאה לפוסט לפי ID
 router.get('/:id', getPostById);
 
-router.put('/:id', updatePost);
+// קריאה לפוסטים לפי sender
+router.get('/sender/:sender', getPostsBySender);
 
-router.get("/", postController.getPostsBySender);  
+// עדכון פוסט (דורש אימות)
+router.put('/:id', authMiddleware, updatePost);
 
-
-
-router.delete('/:id', deletePost); 
+// מחיקת פוסט (דורש אימות)
+router.delete('/:id', authMiddleware, deletePost);
 
 module.exports = router;

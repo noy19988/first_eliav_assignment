@@ -1,4 +1,36 @@
 const Comment = require('../models/comment'); 
+const Post = require('../models/post');
+const User = require('../models/user');
+
+// יצירת תגובה חדשה
+exports.createComment = async (req, res) => {
+    const { postId, content } = req.body;
+    const userId = req.userId; // נניח ש-authMiddleware מגדיר userId
+
+    try {
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const newComment = new Comment({
+            content,
+            postId,
+            author: userId,
+        });
+
+        await newComment.save();
+        res.status(201).json({ message: 'Comment created successfully', comment: newComment });
+    } catch (error) {
+        console.error('Error creating comment:', error);
+        res.status(500).json({ message: 'Error creating comment', error });
+    }
+};
 
 
 exports.addComment = async (req, res) => {
