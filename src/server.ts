@@ -1,12 +1,15 @@
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const swaggerJsDoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
+import dotenv from 'dotenv';
+import express, { Application } from 'express';
+import mongoose from 'mongoose';
+import bodyParser from 'body-parser';
+import swaggerJsDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+
+// טעינת קובץ הסביבה
+dotenv.config();
 
 // הגדרת האפליקציה
-const app = express();
+const app: Application = express();
 
 // Middleware
 app.use(bodyParser.json());
@@ -24,7 +27,7 @@ const swaggerOptions = {
             description: 'Documentation for REST API',
             contact: {
                 name: 'Your Name',
-                email: 'your-email@example.com'
+                email: 'your-email@example.com',
             },
         },
         servers: [
@@ -34,31 +37,32 @@ const swaggerOptions = {
             },
         ],
     },
-    apis: ['./routes/*.js'], // הפניה לקבצי ה-Routes
+    apis: ['./src/routes/*.ts'], // הפניה לקבצי ה-Routes ב-TypeScript
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Routes
-const usersRoutes = require('./routes/usersRoutes');
-const postsRoutes = require('./routes/postsRoutes');
-const commentsRoutes = require('./routes/commentsRoutes');
+import usersRoutes from './routes/usersRoutes';
+import postsRoutes from './routes/postsRoutes';
+import commentsRoutes from './routes/commentsRoutes';
 
 app.use('/users', usersRoutes);
 app.use('/post', postsRoutes);
 app.use('/comment', commentsRoutes);
 
 // חיבור ל-MongoDB
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/rest-api')
+mongoose
+    .connect(process.env.MONGO_URI || 'mongodb://localhost:27017/rest-api')
     .then(() => console.log('Connected to MongoDB'))
     .catch((err) => console.error('Error connecting to MongoDB:', err.message));
 
 // הגדרת השרת
 const PORT = process.env.PORT || 3000;
 
-// יצוא של app ללא התחלת השרת
-module.exports = app;
+// ייצוא של האפליקציה ללא התחלת השרת
+export default app;
 
 // הפעלת השרת רק אם לא מבוצע ייבוא של הקובץ
 if (require.main === module) {

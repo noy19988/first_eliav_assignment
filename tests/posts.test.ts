@@ -1,21 +1,18 @@
-const request = require('supertest');
-const mongoose = require('mongoose');
-const app = require('../server');
-const Post = require('../models/post');
-const User = require('../models/user');
-const jwt = require('jsonwebtoken');
+import request from 'supertest';
+import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
+import app from '../src/server';
+import Post from '../src/models/post';
+import User, { IUser } from '../src/models/user';
 
-let accessToken;
-let testUser;
+let accessToken: string;
+let testUser: string; // userId as string
 
 beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/test-db', {});
 
     // יצירת משתמש לדוגמה והרשמה
-    const registerResponse = await request(app).post('/users/register').send({
+    await request(app).post('/users/register').send({
         username: 'testuser',
         email: 'testuser@example.com',
         password: 'password123',
@@ -30,12 +27,14 @@ beforeAll(async () => {
     accessToken = loginResponse.body.token;
 
     // אחזור פרטי המשתמש מתוך הטוקן
-    const decodedToken = jwt.decode(accessToken);
+    const decodedToken = jwt.decode(accessToken) as { userId: string };
     testUser = decodedToken.userId;
 });
 
 afterAll(async () => {
-    await mongoose.connection.db.dropDatabase();
+    if (mongoose.connection.db) {
+        await mongoose.connection.db.dropDatabase();
+    }
     await mongoose.connection.close();
 });
 
@@ -114,20 +113,17 @@ describe('Posts API', () => {
         expect(deletedPost).toBeNull();
     });
 
- it('should fetch posts by author', async () => {
-    const post1 = new Post({ title: 'Post 1', content: 'Content 1', author: testUser });
-    const post2 = new Post({ title: 'Post 2', content: 'Content 2', author: testUser });
-    await post1.save();
-    await post2.save();
+    it('should fetch posts by author', async () => {
+        const post1 = new Post({ title: 'Post 1', content: 'Content 1', author: testUser });
+        const post2 = new Post({ title: 'Post 2', content: 'Content 2', author: testUser });
+        await post1.save();
+        await post2.save();
 
-    const response = await request(app).get(`/post/sender/${testUser}`);
+        const response = await request(app).get(`/post/sender/${testUser}`);
 
-    console.log('Response body:', response.body);
-
-    expect(response.status).toBe(200);
-    expect(response.body.length).toBe(2);
-    expect(response.body[0]).toMatchObject({ title: 'Post 1', content: 'Content 1' });
-    expect(response.body[1]).toMatchObject({ title: 'Post 2', content: 'Content 2' });
-});
-
+        expect(response.status).toBe(200);
+        expect(response.body.length).toBe(2);
+        expect(response.body[0]).toMatchObject({ title: 'Post 1', content: 'Content 1' });
+        expect(response.body[1]).toMatchObject({ title: 'Post 2', content: 'Content 2' });
+    });
 });

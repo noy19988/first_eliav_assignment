@@ -1,6 +1,15 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
-const commentSchema = new mongoose.Schema({
+// Interface לייצוג מסמך תגובה
+export interface IComment extends Document {
+    content: string;
+    postId: mongoose.Schema.Types.ObjectId;
+    author: mongoose.Schema.Types.ObjectId;
+    createdAt: Date;
+}
+
+// הגדרת הסכימה
+const commentSchema = new mongoose.Schema<IComment>({
     content: {
         type: String,
         required: true,
@@ -21,4 +30,6 @@ const commentSchema = new mongoose.Schema({
     },
 });
 
-module.exports = mongoose.model('Comment', commentSchema);
+// ייצוא המודל
+const Comment=mongoose.model<IComment>("Comment",commentSchema);
+export default Comment;

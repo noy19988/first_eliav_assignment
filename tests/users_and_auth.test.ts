@@ -1,20 +1,17 @@
-const request = require('supertest');
-const mongoose = require('mongoose');
-const app = require('../server'); // ייבוא היישום
-const User = require('../models/user');
-const bcrypt = require('bcrypt');
+import request from 'supertest';
+import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
+import app from '../src/server'; // ייבוא היישום
+import User from '../src/models/user';
 
-let server;
-let accessToken;
-let refreshToken;
+let server: any;
+let accessToken: string;
+let refreshToken: string;
 
 beforeAll(async () => {
     // הפעלת השרת לצורך בדיקות
     server = app.listen(4000, () => console.log('Test server running on port 4000'));
-    await mongoose.connect(process.env.MONGO_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/rest-api');
 });
 
 afterAll(async () => {
@@ -71,14 +68,20 @@ describe('User and Auth Tests', () => {
                 password: 'password123',
             });
 
+        console.log('Login response:', response.body); // בדיקת תגובת ההתחברות
+
         expect(response.status).toBe(200);
-        expect(response.body).toEqual(expect.objectContaining({
-            message: 'Login successful',
-            token: expect.any(String),
-            refreshToken: expect.any(String),
-        }));
+        expect(response.body).toEqual(
+            expect.objectContaining({
+                message: 'Login successful',
+                token: expect.any(String),
+                refreshToken: expect.any(String),
+            }),
+        );
+
         accessToken = response.body.token;
         refreshToken = response.body.refreshToken;
+        console.log('Access Token:', accessToken); // בדיקת הטוקן שנוצר
     });
 
     it('should fail login with invalid credentials', async () => {
@@ -108,7 +111,7 @@ describe('User and Auth Tests', () => {
             .set('Authorization', `Bearer ${token}`);
 
         expect(response.status).toBe(200);
-        expect(response.body).toBeInstanceOf(Array);
+        expect(Array.isArray(response.body)).toBeTruthy();
     });
 
     it('should fail to fetch all users without a token', async () => {
@@ -119,26 +122,23 @@ describe('User and Auth Tests', () => {
     });
 
     it('should log out the user', async () => {
-        // ביצוע התחברות כדי לקבל refreshToken
         const loginResponse = await request(app)
             .post('/users/login')
             .send({
                 email: 'testuser@example.com',
                 password: 'password123',
             });
-    
+
         const validRefreshToken = loginResponse.body.refreshToken;
-    
-        // שליחת בקשת logout עם refreshToken תקין
+        console.log('Valid Refresh Token:', validRefreshToken); // בדיקת הטוקן שנשלח ל-Logout
+
         const response = await request(app)
             .post('/users/logout')
             .send({ refreshToken: validRefreshToken });
-    
-        // בדיקת הצלחת הבקשה
+
         expect(response.status).toBe(200);
         expect(response.body).toEqual({ message: 'Logout successful' });
     });
-    
 
     it('should fail to log out with an invalid refresh token', async () => {
         const response = await request(app)

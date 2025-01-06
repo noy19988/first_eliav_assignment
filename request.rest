@@ -76,9 +76,9 @@ POST http://localhost:3000/users/register
 Content-Type: application/json
 
 {
-  "username": "ron1",
-  "email": "ron1@gmail.com",
-  "password": "123456"
+  "username": "ron22",
+  "email": "ron22@gmail.com",
+  "password": "12345"
 }
 
 ### Login a user
@@ -87,8 +87,8 @@ Content-Type: application/json
 
 {
   
-  "email": "ron1@gmail.com",
-  "password": "123456"
+  "email": "ron22@gmail.com",
+  "password": "12345"
 }
 
 

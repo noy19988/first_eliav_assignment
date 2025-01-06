@@ -1,20 +1,18 @@
-const express = require('express');
-const router = express.Router();
-const authMiddleware = require('../middleware/authMiddleware'); // Middleware לאימות
-const {
-    addComment,
-    getCommentsByPost,
-    updateComment,
-    deleteComment
-} = require('../controllers/commentsController');
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const authMiddleware_1 = __importDefault(require("../middleware/authMiddleware"));
+const commentsController_1 = require("../controllers/commentsController");
+const router = express_1.default.Router();
 /**
  * @swagger
  * tags:
  *   name: Comments
  *   description: API for managing comments
  */
-
 /**
  * @swagger
  * components:
@@ -40,7 +38,6 @@ const {
  *         postId: "64b5f7e7e87d5c2b4a8f45d1"
  *         author: "64b5f8e7e87d5c2b4a8f45d2"
  */
-
 /**
  * @swagger
  * /comments:
@@ -65,8 +62,7 @@ const {
  *       400:
  *         description: Bad request
  */
-router.post('/', authMiddleware, addComment);
-
+router.post('/', authMiddleware_1.default, commentsController_1.addComment);
 /**
  * @swagger
  * /comments/post/{postId}:
@@ -92,8 +88,7 @@ router.post('/', authMiddleware, addComment);
  *       404:
  *         description: Post not found
  */
-router.get('/post/:postId', getCommentsByPost);
-
+router.get('/post/:postId', commentsController_1.getCommentsByPost);
 /**
  * @swagger
  * /comments/{id}:
@@ -121,8 +116,7 @@ router.get('/post/:postId', getCommentsByPost);
  *       404:
  *         description: Comment not found
  */
-router.put('/:id', authMiddleware, updateComment);
-
+router.put('/:id', authMiddleware_1.default, commentsController_1.updateComment);
 /**
  * @swagger
  * /comments/{id}:
@@ -144,6 +138,5 @@ router.put('/:id', authMiddleware, updateComment);
  *       404:
  *         description: Comment not found
  */
-router.delete('/:id', authMiddleware, deleteComment);
-
-module.exports = router;
+router.delete('/:id', authMiddleware_1.default, commentsController_1.deleteComment);
+exports.default = router;

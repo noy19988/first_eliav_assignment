@@ -1,33 +1,34 @@
-const request = require('supertest');
-const mongoose = require('mongoose');
-const app = require('../server');
-const User = require('../models/user');
-const Post = require('../models/post');
-const Comment = require('../models/comment');
+import request from 'supertest';
+import mongoose from 'mongoose';
+import app from '../src/server';
+import User from '../src/models/user';
+import Post from '../src/models/post';
+import Comment from '../src/models/comment';
 
-let accessToken;
-let testUser;
-let testPost;
+let accessToken: string;
+let testUser: string;
+let testPost: mongoose.Types.ObjectId;
 
 beforeAll(async () => {
     // התחברות למסד הנתונים
-    await mongoose.connect(process.env.MONGO_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/rest-api', {
     });
 });
 
 afterAll(async () => {
     // ניקוי מסד הנתונים וסגירת החיבור
-    await mongoose.connection.db.dropDatabase();
-    await mongoose.connection.close();
+    const connection = mongoose.connection;
+    if (connection.db) {
+        await connection.db.dropDatabase();
+    }
+    await connection.close();
 });
 
 beforeEach(async () => {
     // ניקוי אוספים רלוונטיים
-    await mongoose.connection.collection('users').deleteMany({});
-    await mongoose.connection.collection('posts').deleteMany({});
-    await mongoose.connection.collection('comments').deleteMany({});
+    await User.deleteMany({});
+    await Post.deleteMany({});
+    await Comment.deleteMany({});
 
     // יצירת משתמש דרך פונקציית register
     await request(app)
@@ -46,18 +47,22 @@ beforeEach(async () => {
             password: 'password123',
         });
 
-    accessToken = loginResponse.body.token;
+    accessToken = loginResponse.body.token as string;
 
     // יצירת משתמש לדוגמה
-    testUser = await User.findOne({ email: 'testuser@example.com' });
+    const user = await User.findOne({ email: 'testuser@example.com' });
+    if (user) {
+        testUser = user._id;
+    }
 
     // יצירת פוסט לדוגמה
-    testPost = new Post({
+    const post = new Post({
         title: 'Test Post',
         content: 'Test Content',
-        author: testUser._id,
+        author: testUser,
     });
-    await testPost.save();
+    const savedPost = await post.save();
+    testPost = savedPost._id;
 });
 
 describe('Comments API', () => {
@@ -67,15 +72,15 @@ describe('Comments API', () => {
             .set('Authorization', `Bearer ${accessToken}`)
             .send({
                 content: 'Test Comment',
-                postId: testPost._id,
-                author: testUser._id, // שדה נוסף אם נדרש
+                postId: testPost,
+                author: testUser,
             });
-    
+
         expect(response.status).toBe(201);
         expect(response.body).toMatchObject({
             content: 'Test Comment',
-            postId: testPost._id.toString(),
-            author: testUser._id.toString(),
+            postId: testPost.toString(),
+            author: testUser.toString(),
         });
     });
 
@@ -83,25 +88,20 @@ describe('Comments API', () => {
         // יצירת שתי תגובות לדוגמה
         const comment1 = new Comment({
             content: 'Comment 1',
-            postId: testPost._id,
-            author: testUser._id,
+            postId: testPost,
+            author: testUser,
         });
         const comment2 = new Comment({
             content: 'Comment 2',
-            postId: testPost._id,
-            author: testUser._id,
+            postId: testPost,
+            author: testUser,
         });
         await comment1.save();
         await comment2.save();
 
-        // בדיקה שמספר התגובות במסד הנתונים תואם לציפייה
-        const allComments = await Comment.find({ postId: testPost._id });
-        expect(allComments.length).toBe(2);
-
         // שליפת תגובות לפי postId
-        const response = await request(app).get(`/comment/post/${testPost._id}`);
+        const response = await request(app).get(`/comment/post/${testPost}`);
 
-        // בדיקות
         expect(response.status).toBe(200);
         expect(response.body.length).toBe(2);
         expect(response.body[0]).toMatchObject({ content: 'Comment 1' });
@@ -111,13 +111,13 @@ describe('Comments API', () => {
     it('should update a comment', async () => {
         const comment = new Comment({
             content: 'Old Comment',
-            postId: testPost._id,
-            author: testUser._id,
+            postId: testPost,
+            author: testUser,
         });
-        await comment.save();
+        const savedComment = await comment.save();
 
         const response = await request(app)
-            .put(`/comment/${comment._id}`)
+            .put(`/comment/${savedComment._id}`)
             .set('Authorization', `Bearer ${accessToken}`)
             .send({ content: 'Updated Comment' });
 
@@ -128,19 +128,19 @@ describe('Comments API', () => {
     it('should delete a comment', async () => {
         const comment = new Comment({
             content: 'Comment to delete',
-            postId: testPost._id,
-            author: testUser._id,
+            postId: testPost,
+            author: testUser,
         });
-        await comment.save();
+        const savedComment = await comment.save();
 
         const response = await request(app)
-            .delete(`/comment/${comment._id}`)
+            .delete(`/comment/${savedComment._id}`)
             .set('Authorization', `Bearer ${accessToken}`);
 
         expect(response.status).toBe(200);
         expect(response.body).toEqual({ message: 'Comment deleted' });
 
-        const deletedComment = await Comment.findById(comment._id);
+        const deletedComment = await Comment.findById(savedComment._id);
         expect(deletedComment).toBeNull();
     });
 });

@@ -1,21 +1,34 @@
-const Comment = require('../models/comment'); 
-const Post = require('../models/post');
-const User = require('../models/user');
+// הרחבת Request לאובייקט user
+declare global {
+    namespace Express {
+        interface Request {
+            user?: { userId: string };
+        }
+    }
+}
+
+
+import { Request, Response } from 'express';
+import Comment, { IComment } from '../models/comment';
+import Post from '../models/post';
+import User from '../models/user';
 
 // יצירת תגובה חדשה
-exports.createComment = async (req, res) => {
+export const createComment = async (req: Request, res: Response): Promise<void> => {
     const { postId, content } = req.body;
-    const userId = req.userId; // נניח ש-authMiddleware מגדיר userId
+    const userId = req.user?.userId; // בהנחה ש-authMiddleware מגדיר userId ב-req.user
 
     try {
         const post = await Post.findById(postId);
         if (!post) {
-            return res.status(404).json({ message: 'Post not found' });
+            res.status(404).json({ message: 'Post not found' });
+            return;
         }
 
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            res.status(404).json({ message: 'User not found' });
+            return;
         }
 
         const newComment = new Comment({
@@ -32,8 +45,8 @@ exports.createComment = async (req, res) => {
     }
 };
 
-
-exports.addComment = async (req, res) => {
+// הוספת תגובה
+export const addComment = async (req: Request, res: Response): Promise<void> => {
     try {
         const comment = new Comment(req.body);
         await comment.save();
@@ -43,8 +56,8 @@ exports.addComment = async (req, res) => {
     }
 };
 
-
-exports.getCommentsByPost = async (req, res) => {
+// קבלת תגובות לפי פוסט
+export const getCommentsByPost = async (req: Request, res: Response): Promise<void> => {
     try {
         const comments = await Comment.find({ postId: req.params.postId });
         res.status(200).send(comments);
@@ -53,22 +66,28 @@ exports.getCommentsByPost = async (req, res) => {
     }
 };
 
-
-exports.updateComment = async (req, res) => {
+// עדכון תגובה
+export const updateComment = async (req: Request, res: Response): Promise<void> => {
     try {
         const comment = await Comment.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!comment) return res.status(404).send({ error: 'Comment not found' });
+        if (!comment) {
+            res.status(404).send({ error: 'Comment not found' });
+            return;
+        }
         res.status(200).send(comment);
     } catch (error) {
         res.status(400).send(error);
     }
 };
 
-
-exports.deleteComment = async (req, res) => {
+// מחיקת תגובה
+export const deleteComment = async (req: Request, res: Response): Promise<void> => {
     try {
         const comment = await Comment.findByIdAndDelete(req.params.id);
-        if (!comment) return res.status(404).send({ error: 'Comment not found' });
+        if (!comment) {
+            res.status(404).send({ error: 'Comment not found' });
+            return;
+        }
         res.status(200).send({ message: 'Comment deleted' });
     } catch (error) {
         res.status(500).send(error);

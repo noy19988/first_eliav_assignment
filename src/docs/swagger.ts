@@ -1,8 +1,9 @@
-const swaggerJsDoc = require("swagger-jsdoc");
-const swaggerUi = require("swagger-ui-express");
+import swaggerJsDoc, { Options } from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
+import { Express } from "express";
 
-const swaggerOptions = {
-  swaggerDefinition: {
+const swaggerOptions: Options = {
+  definition: {
     openapi: "3.0.0",
     info: {
       title: "API Documentation",
@@ -15,11 +16,11 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: ["./routes/*.js"], // תיעוד מתוך קבצי ה-Routes
+  apis: ["./src/routes/*.ts"], // תיעוד מתוך קבצי ה-Routes שעברו ל-TypeScript
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
-module.exports = (app) => {
+export const setupSwagger = (app: Express): void => {
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 };
