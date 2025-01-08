@@ -82,7 +82,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         user.refreshTokens.push(refreshToken);
         await user.save();
 
-        res.status(200).json({ message: 'Login successful', token, refreshToken });
+        res.status(200).json({ message: 'Login successful', token, refreshToken, userId: user._id });
     } catch (error) {
         console.error('Error during login:', error);
         res.status(500).json({ message: 'Error logging in', error: (error as Error).message });
@@ -138,59 +138,52 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
         user.refreshTokens.push(newRefreshToken);
         await user.save();
 
-        res.status(200).json({ token, refreshToken: newRefreshToken });
+        res.status(200).json({ token, refreshToken: newRefreshToken});
     } catch (err) {
         console.error('Error refreshing token:', err);
         res.status(403).json({ message: 'Invalid refresh token', error: (err as Error).message });
     }
 };
 
-// Get all users
-export const getAllUsers = async (_req: Request, res: Response): Promise<void> => {
-    try {
-        const users = await User.find().select('-password');
-        res.status(200).json(users);
-    } catch (error) {
-        res.status(500).json({ message: 'Error retrieving users', error: (error as Error).message });
-    }
-};
-
-// Get user by ID
-export const getUserById = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const user = await User.findById(req.params.id).select('-password');
-        if (!user) {
-            res.status(404).json({ message: 'User not found' });
-            return;
-        }
-        res.status(200).json(user);
-    } catch (error) {
-        res.status(500).json({ message: 'Error retrieving user', error: (error as Error).message });
-    }
-};
-
 // Update user
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
+    const { username, email, password } = req.body;
+
+    // לא מבצעים בדיקה אם שדה מסוים ריק, רק אם הוא נשלח ונמצא
+    const updates: any = {};
+    if (username) updates.username = username;
+    if (email) updates.email = email;
+    if (password) updates.password = await bcrypt.hash(password, 10);
+
+    if (Object.keys(updates).length === 0) {
+        res.status(400).json({ message: 'At least one field must be provided for update' });
+        return;
+    }
+
     try {
-        const { username, email } = req.body;
         const updatedUser = await User.findByIdAndUpdate(
             req.params.id,
-            { username, email },
+            updates,
             { new: true }
         ).select('-password');
+
         if (!updatedUser) {
             res.status(404).json({ message: 'User not found' });
             return;
         }
+
         res.status(200).json(updatedUser);
     } catch (error) {
         res.status(500).json({ message: 'Error updating user', error: (error as Error).message });
     }
 };
 
+
+
 // Delete user
 export const deleteUser = async (req: Request, res: Response): Promise<void> => {
     try {
+        console.log('Deleting user withID at func:', req.params.id);  // לוג שמדפיס את ה-ID
         const deletedUser = await User.findByIdAndDelete(req.params.id);
         if (!deletedUser) {
             res.status(404).json({ message: 'User not found' });
@@ -202,13 +195,31 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
     }
 };
 
+
+export const getUserDetails = async (req: Request, res: Response): Promise<void> => {
+    try {
+        console.log("Fetching user details for ID:", req.params.id); // הדפסה של ה-ID שנשלח בבקשה
+        const user = await User.findById(req.params.id).select('-password'); // שליפת המשתמש לפי ID
+        if (!user) {
+            console.log("User not found with ID:", req.params.id); // הדפסה אם לא נמצא משתמש
+            res.status(404).json({ message: 'User not found' });
+            return;
+        }
+        console.log("User found:", user); // הדפסה אם המשתמש נמצא
+        res.status(200).json(user); // החזרת פרטי המשתמש
+    } catch (error) {
+        console.error("Error retrieving user details:", error); // הדפסה אם יש שגיאה
+        res.status(500).json({ message: 'Error retrieving user details', error });
+    }
+};
+
+
 export default {
     registerUser,
     loginUser,
     logoutUser,
     refreshToken,
-    getAllUsers,
-    getUserById,
     updateUser,
+    getUserDetails,
     deleteUser,
 };

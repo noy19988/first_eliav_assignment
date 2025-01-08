@@ -4,11 +4,11 @@
   "main": "index.js",
   "scripts": {
     "start": "tsc && node ./dist/server.js",
-    "dev": "nodemon src/server.ts",
-    "test": "tsc && jest --detectOpenHandles --forceExit --runInBand",
+    "dev": "nodemon ./src/server.ts",
+    "test": "tsc && jest --detectOpenHandles --forceExit --runInBand --verbose",
     "testAuth": "tsc && jest --detectOpenHandles --forceExit tests/users_and_auth.test.ts --runInBand",
     "testPost": "tsc && jest --detectOpenHandles --forceExit tests/posts.test.ts --runInBand",
-    "testComment": "tsc && jest --detectOpenHandles --forceExit tests/comments.test.ts --runInBand",
+    "testComment": "tsc && jest --detectOpenHandles --forceExit tests/comments.test.ts --runInBand --verbose",
     "lint": "eslint . --ext .ts"
   },
   "keywords": [],
@@ -16,9 +16,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "bcrypt": "^5.1.0",
-    "bcryptjs": "^2.4.3",
+    "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",

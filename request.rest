@@ -76,9 +76,9 @@ POST http://localhost:3000/users/register
 Content-Type: application/json
 
 {
-  "username": "ron22",
-  "email": "ron22@gmail.com",
-  "password": "12345"
+  "username": "noy1234",
+  "email": "noy1234@gmail.com",
+  "password": "1212"
 }
 
 ### Login a user
@@ -87,8 +87,8 @@ Content-Type: application/json
 
 {
   
-  "email": "ron22@gmail.com",
-  "password": "12345"
+  "email": "noy1234@gmail.com",
+  "password": "1212"
 }
 
 
@@ -102,7 +102,7 @@ POST http://localhost:3000/users/logout
 Content-Type: application/json
 
 {
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdhODBkNmM5ODEyNDVjNTQ1NWE2ODciLCJpYXQiOjE3MzYwODE2MzksImV4cCI6MTczNjY4NjQzOX0.CFYOjlp82tM4gjAQm1_8fpBsIblhs3QBSZmWnWofGeo"
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdkODExYjgzNTM4ZDBlODg3ZDZiMDIiLCJpYXQiOjE3MzYyNzgzMjAsImV4cCI6MTczNjg4MzEyMH0.r5VwVDzUOI4FmKFmI4CzMBE8SRtKSSCNjmmpzUy4QHI"
 }
 
 ### Refresh a user token
@@ -117,7 +117,7 @@ Content-Type: application/json
 ### Create a new post with an access token
 POST http://localhost:3000/post
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdhOGQyNTlmZTEwMzZjOWI2ZWEyN2YiLCJpYXQiOjE3MzYwODQ3ODAsImV4cCI6MTczNjE3MTE4MH0.d5BuvijRRBzKkeBc6DU2vCgw0UvE6z2OV72Qb0tBrVw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdlNjU1MjYyNGY1NGUyMmM3ZTkwNTUiLCJpYXQiOjE3MzYzMzY3NDMsImV4cCI6MTczNjU5NTk0M30.M74BCx0zlZWeLIVh7td0LQjtLDB5KezBsJs51Q0n9nE
 
 {
   "title": "My First Post",
@@ -130,7 +130,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdhO
 
 PUT http://localhost:3000/post/677a8a8ec74320900f37d65b
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdhODBkNmM5ODEyNDVjNTQ1NWE2ODciLCJpYXQiOjE3MzYwODQwMTYsImV4cCI6MTczNjE3MDQxNn0.9I-SFl0Tvw8N-_hxNRbhl2V0Uqaiau4ES70soN6qwIA
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdlNjU1MjYyNGY1NGUyMmM3ZTkwNTUiLCJpYXQiOjE3MzYzMzY3NDMsImV4cCI6MTczNjU5NTk0M30.M74BCx0zlZWeLIVh7td0LQjtLDB5KezBsJs51Q0n9nE
 
 {
   "title": "Updated Title",
@@ -147,11 +147,11 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdhO
 ### Create a new comment with an access token
 POST http://localhost:3000/comment
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdhOGQyNTlmZTEwMzZjOWI2ZWEyN2YiLCJpYXQiOjE3MzYwODQ3ODAsImV4cCI6MTczNjE3MTE4MH0.d5BuvijRRBzKkeBc6DU2vCgw0UvE6z2OV72Qb0tBrVw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdlNjU1MjYyNGY1NGUyMmM3ZTkwNTUiLCJpYXQiOjE3MzYzMzY3NDMsImV4cCI6MTczNjU5NTk0M30.M74BCx0zlZWeLIVh7td0LQjtLDB5KezBsJs51Q0n9nE
 
 {
-  "postId": "677a8e049fe1036c9b6ea284",
-  "content": "This is a comment on the post.",
+  "postId": "677df1e4bc98dc01f6bb410c",
+  "content": "This is a comment on the postttttttttttt.",
   "author": "677a80d6c981245c5455a687"
 }
 

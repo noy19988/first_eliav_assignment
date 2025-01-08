@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
-import usersController from '../controllers/usersController';
-import authMiddleware from '../middleware/authMiddleware'; // Middleware לאימות
+import usersController, { getUserDetails } from '../controllers/usersController';
+import authMiddleware from '../middleware/authMiddleware';
 
 const router: Router = express.Router();
 
@@ -106,7 +106,7 @@ router.post('/login', usersController.loginUser);
 /**
  * @swagger
  * /auth/logout:
- *   get:
+ *   post:
  *     summary: Logout a user
  *     tags: [Auth]
  *     description: Need to provide the refresh token in the auth header
@@ -118,25 +118,99 @@ router.post('/login', usersController.loginUser);
  */
 router.post('/logout', usersController.logoutUser);
 
-// רישום משתמש חדש
-router.post('/register', usersController.registerUser);
+/**
+ * @swagger
+ * /auth/refresh:
+ *   post:
+ *     summary: Refresh the user's access token using a refresh token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Token successfully refreshed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                 refreshToken:
+ *                   type: string
+ *       403:
+ *         description: Invalid or expired refresh token
+ */
+router.post('/refresh', usersController.refreshToken);
 
-// התחברות משתמש
-router.post('/login', usersController.loginUser);
 
-// רענון טוקן
-router.post('/refresh', usersController.refreshToken); // אינו דורש אימות כי ה-refresh token מספק את האימות
-
-// קריאה לכל המשתמשים
-router.get('/', authMiddleware, usersController.getAllUsers);
-
-// קריאה למשתמש לפי ID
-router.get('/:id', authMiddleware, usersController.getUserById);
-
-// עדכון פרטי משתמש
+/**
+ * @swagger
+ * /users/{id}:
+ *   put:
+ *     summary: Update user details
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: User ID
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
+ *     responses:
+ *       200:
+ *         description: Updated user details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Invalid user data
+ *       404:
+ *         description: User not found
+ */
 router.put('/:id', authMiddleware, usersController.updateUser);
 
-// מחיקת משתמש
+/**
+ * @swagger
+ * /users/{id}:
+ *   delete:
+ *     summary: Delete a user by ID
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: User ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *       404:
+ *         description: User not found
+ */
 router.delete('/:id', authMiddleware, usersController.deleteUser);
+
+router.get('/:id', authMiddleware, getUserDetails); // נתיב לשליפת פרטי המשתמש
+
+
 
 export default router;

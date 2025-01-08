@@ -58,16 +58,15 @@ mongoose
     .then(() => console.log('Connected to MongoDB'))
     .catch((err) => console.error('Error connecting to MongoDB:', err.message));
 
-// הגדרת השרת
-const PORT = process.env.PORT || 3000;
+    const initApp = (): Application => app; // Return the app instance directly
 
-// ייצוא של האפליקציה ללא התחלת השרת
-export default app;
-
-// הפעלת השרת רק אם לא מבוצע ייבוא של הקובץ
-if (require.main === module) {
-    app.listen(PORT, () => {
-        console.log(`Server is running on http://localhost:${PORT}`);
-        console.log(`Swagger documentation available at http://localhost:${PORT}/api-docs`);
-    });
+export default initApp;
+    
+    if (require.main === module) {
+        const port = process.env.PORT || 3000;
+        app.listen(port, () => {
+            console.log(`Server is running on http://localhost:${port}`);
+            console.log(`Swagger documentation available at http://localhost:${port}/api-docs`);
+        });
 }
+

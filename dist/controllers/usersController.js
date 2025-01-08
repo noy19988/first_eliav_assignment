@@ -17,15 +17,21 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const user_1 = __importDefault(require("../models/user"));
+const mongoose_1 = __importDefault(require("mongoose"));
 dotenv_1.default.config();
-const JWT_SECRET = process.env.JWT_SECRET || 'JWT_SECRET';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'JWT_REFRESH_SECRET';
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 // Register a new user
 const registerUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, email, password } = req.body;
     try {
         if (!username || !email || !password) {
             res.status(400).json({ message: 'All fields are required' });
+            return;
+        }
+        // Validate spaces in username or email
+        if (/\s/.test(username) || /\s/.test(email)) {
+            res.status(400).json({ message: 'Username or email cannot contain spaces' });
             return;
         }
         const existingUser = yield user_1.default.findOne({ $or: [{ email: email.toLowerCase() }, { username }] });
@@ -90,6 +96,10 @@ exports.loginUser = loginUser;
 const logoutUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { refreshToken } = req.body;
     console.log('Received refreshToken:', refreshToken); // לוג נוסף לבדיקה
+    if (!refreshToken) {
+        res.status(400).json({ message: 'Refresh token is required' });
+        return;
+    }
     try {
         const user = yield user_1.default.findOne({ refreshTokens: refreshToken });
         console.log('User found:', user); // בדוק אם המשתמש מזוהה
@@ -162,29 +172,66 @@ exports.getUserById = getUserById;
 const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { username, email } = req.body;
-        const updatedUser = yield user_1.default.findByIdAndUpdate(req.params.id, { username, email }, { new: true }).select('-password');
-        if (!updatedUser) {
+        // בדיקה אם מזהה המשתמש תקין
+        if (!mongoose_1.default.Types.ObjectId.isValid(req.params.id)) {
             res.status(404).json({ message: 'User not found' });
             return;
         }
-        res.status(200).json(updatedUser);
+        const user = yield user_1.default.findById(req.params.id);
+        if (!user) {
+            res.status(404).json({ message: 'User not found' });
+            return;
+        }
+        // ולידציות
+        if (username && /\s/.test(username)) {
+            res.status(400).json({ message: 'Username cannot contain spaces' });
+            return;
+        }
+        if (email && !/^\S+@\S+\.\S+$/.test(email)) {
+            res.status(400).json({ message: 'Invalid email format' });
+            return;
+        }
+        // בדיקה אם שם המשתמש או האימייל כבר קיימים
+        const existingUser = yield user_1.default.findOne({
+            $or: [{ email: email.toLowerCase() }, { username }]
+        });
+        if (existingUser) {
+            res.status(400).json({ message: 'User already exists' });
+            return;
+        }
+        // עדכון שדות מוגדרים בלבד
+        if (username)
+            user.username = username;
+        if (email)
+            user.email = email.toLowerCase();
+        yield user.save(); // הפעלת ולידציות של הסכימה
+        res.status(200).json(user); // מחזיר את הנתונים המעודכנים
     }
     catch (error) {
-        res.status(500).json({ message: 'Error updating user', error: error.message });
+        console.error('Error updating user:', error);
+        res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 });
 exports.updateUser = updateUser;
 // Delete user
 const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const deletedUser = yield user_1.default.findByIdAndDelete(req.params.id);
-        if (!deletedUser) {
+        // בדיקה אם המזהה תקין
+        if (!mongoose_1.default.Types.ObjectId.isValid(req.params.id)) {
             res.status(404).json({ message: 'User not found' });
             return;
         }
+        // בדיקה אם המשתמש קיים
+        const user = yield user_1.default.findById(req.params.id);
+        if (!user) {
+            res.status(404).json({ message: 'User not found' });
+            return;
+        }
+        yield user.deleteOne();
         res.status(200).json({ message: 'User deleted successfully' });
     }
     catch (error) {
+        console.error('Error deleting user:', error);
         res.status(500).json({ message: 'Error deleting user', error: error.message });
     }
 });

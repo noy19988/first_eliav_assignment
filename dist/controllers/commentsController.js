@@ -21,13 +21,19 @@ const createComment = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     var _a;
     const { postId, content } = req.body;
     const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId; // בהנחה ש-authMiddleware מגדיר userId ב-req.user
+    console.log('Entering createComment function...');
+    console.log('Received postId:', postId); // הדפסה לבדיקה
+    console.log('Received content:', content); // הדפסה לבדיקה
+    console.log('Received userId:', userId); // הדפסה לבדיקה
     try {
         const post = yield post_1.default.findById(postId);
+        console.log('Fetched post:', post);
         if (!post) {
             res.status(404).json({ message: 'Post not found' });
             return;
         }
         const user = yield user_1.default.findById(userId);
+        console.log('Fetched user:', user);
         if (!user) {
             res.status(404).json({ message: 'User not found' });
             return;

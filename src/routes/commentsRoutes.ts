@@ -1,7 +1,7 @@
 import express, { Router } from 'express';
 import authMiddleware from '../middleware/authMiddleware';
 import {
-    addComment,
+    createComment,
     getCommentsByPost,
     updateComment,
     deleteComment,
@@ -66,7 +66,7 @@ const router: Router = express.Router();
  *       400:
  *         description: Bad request
  */
-router.post('/', authMiddleware, addComment);
+router.post('/', authMiddleware, createComment);
 
 /**
  * @swagger
