@@ -40,11 +40,12 @@ const swaggerOptions = {
     apis: ['./src/routes/*.ts'], // הפניה לקבצי ה-Routes ב-TypeScript
 };
 const swaggerDocs = (0, swagger_jsdoc_1.default)(swaggerOptions);
-app.use('/api-docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerDocs));
+app.use('/rest-api', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerDocs));
 // Routes
 const usersRoutes_1 = __importDefault(require("./routes/usersRoutes"));
 const postsRoutes_1 = __importDefault(require("./routes/postsRoutes"));
 const commentsRoutes_1 = __importDefault(require("./routes/commentsRoutes"));
+app.use('/auth', usersRoutes_1.default); // שים לב לשם הנתיב כאן!
 app.use('/users', usersRoutes_1.default);
 app.use('/post', postsRoutes_1.default);
 app.use('/comment', commentsRoutes_1.default);

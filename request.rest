@@ -3,8 +3,8 @@ POST http://localhost:3000/post
 Content-Type: application/json
 
 {
-    "title": "presen post",
-    "content": "content of my present post",
+    "title": "presen posttts",
+    "content": "content of my present posttst",
     "sender": "eliav"
 }
 
@@ -13,7 +13,7 @@ Content-Type: application/json
 GET http://localhost:3000/post
 
 
-###
+###n
 GET http://localhost:3000/post/677700e81e5efd44e9e3a15e
 
 ###
@@ -76,8 +76,8 @@ POST http://localhost:3000/users/register
 Content-Type: application/json
 
 {
-  "username": "noy1234",
-  "email": "noy1234@gmail.com",
+  "username": "noy12345",
+  "email": "noy1234@gmail.comm",
   "password": "1212"
 }
 
@@ -87,7 +87,7 @@ Content-Type: application/json
 
 {
   
-  "email": "noy1234@gmail.com",
+  "email": "noy1234@gmail.comm",
   "password": "1212"
 }
 
@@ -102,7 +102,7 @@ POST http://localhost:3000/users/logout
 Content-Type: application/json
 
 {
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdkODExYjgzNTM4ZDBlODg3ZDZiMDIiLCJpYXQiOjE3MzYyNzgzMjAsImV4cCI6MTczNjg4MzEyMH0.r5VwVDzUOI4FmKFmI4CzMBE8SRtKSSCNjmmpzUy4QHI"
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdlYjY0OGUxNWUwMDliYWM0M2E1ZTYiLCJpYXQiOjE3MzYzNTkzMDAsImV4cCI6MTczNjk2NDEwMH0.6J1Cc9u6EbcyD8h6HGSHmP7r-9R3EN-4_ipkjcdsKqE"
 }
 
 ### Refresh a user token

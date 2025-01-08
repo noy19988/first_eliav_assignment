@@ -1,44 +1,10 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const usersController_1 = __importStar(require("../controllers/usersController"));
-const authMiddleware_1 = __importDefault(require("../middleware/authMiddleware"));
+const usersController_1 = __importDefault(require("../controllers/usersController")); // ודא שהנתיב נכון
 const router = express_1.default.Router();
 /**
  * @swagger
@@ -50,10 +16,10 @@ const router = express_1.default.Router();
  * @swagger
  * components:
  *   securitySchemes:
- *       bearerAuth:
- *           type: http
- *           scheme: bearer
- *           bearerFormat: JWT
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
  */
 /**
  * @swagger
@@ -64,14 +30,19 @@ const router = express_1.default.Router();
  *       required:
  *         - email
  *         - password
+ *         - username
  *       properties:
+ *         username:
+ *           type: string
+ *           description: The username of the user
  *         email:
  *           type: string
- *           description: The user email
+ *           description: The email of the user
  *         password:
  *           type: string
- *           description: The user password
+ *           description: The password of the user
  *       example:
+ *         username: 'bob'
  *         email: 'bob@gmail.com'
  *         password: '123456'
  */
@@ -79,7 +50,7 @@ const router = express_1.default.Router();
  * @swagger
  * /auth/register:
  *   post:
- *     summary: registers a new user
+ *     summary: Registers a new user
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -88,12 +59,16 @@ const router = express_1.default.Router();
  *           schema:
  *             $ref: '#/components/schemas/User'
  *     responses:
- *       200:
- *         description: Registration success, return the new user
+ *       201:
+ *         description: Registration successful, returns the new user
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Invalid input
+ *       500:
+ *         description: Internal server error
  */
 router.post('/register', usersController_1.default.registerUser);
 /**
@@ -119,18 +94,15 @@ router.post('/register', usersController_1.default.registerUser);
  *                       accessToken:
  *                           type: string
  *                           description: JWT access token
- *                           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *                       refreshToken:
  *                           type: string
  *                           description: JWT refresh token
- *                           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *                       _id:
  *                           type: string
  *                           description: User ID
- *                           example: "60d0fe4f5311236168a109ca"
- *       '400':
+ *       400:
  *         description: Invalid email or password
- *       '500':
+ *       500:
  *         description: Internal server error
  */
 router.post('/login', usersController_1.default.loginUser);
@@ -142,10 +114,14 @@ router.post('/login', usersController_1.default.loginUser);
  *     tags: [Auth]
  *     description: Need to provide the refresh token in the auth header
  *     security:
- *       - bearerAuth: []
+ *       - bearerAuth: []  # וודא שאתה מבצע אימות בטוקן כאן
  *     responses:
  *       200:
  *         description: Logout completed successfully
+ *       401:
+ *         description: Unauthorized - Token not provided or invalid
+ *       500:
+ *         description: Internal server error
  */
 router.post('/logout', usersController_1.default.logoutUser);
 /**
@@ -212,7 +188,7 @@ router.post('/refresh', usersController_1.default.refreshToken);
  *       404:
  *         description: User not found
  */
-router.put('/:id', authMiddleware_1.default, usersController_1.default.updateUser);
+router.put('/:id', usersController_1.default.updateUser);
 /**
  * @swagger
  * /users/{id}:
@@ -234,6 +210,6 @@ router.put('/:id', authMiddleware_1.default, usersController_1.default.updateUse
  *       404:
  *         description: User not found
  */
-router.delete('/:id', authMiddleware_1.default, usersController_1.default.deleteUser);
-router.get('/:id', authMiddleware_1.default, usersController_1.getUserDetails); // נתיב לשליפת פרטי המשתמש
+router.delete('/:id', usersController_1.default.deleteUser);
+router.get('/:id', usersController_1.default.getUserDetails); // Get user details by ID
 exports.default = router;

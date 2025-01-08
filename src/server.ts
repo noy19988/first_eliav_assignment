@@ -17,6 +17,7 @@ app.use(bodyParser.json());
 console.log('JWT_SECRET:', process.env.JWT_SECRET);
 console.log('JWT_REFRESH_SECRET:', process.env.JWT_REFRESH_SECRET);
 
+
 // הגדרות Swagger
 const swaggerOptions = {
     swaggerDefinition: {
@@ -41,13 +42,16 @@ const swaggerOptions = {
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use('/rest-api', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
 
 // Routes
 import usersRoutes from './routes/usersRoutes';
 import postsRoutes from './routes/postsRoutes';
 import commentsRoutes from './routes/commentsRoutes';
 
+
+app.use('/auth', usersRoutes);  // שים לב לשם הנתיב כאן!
 app.use('/users', usersRoutes);
 app.use('/post', postsRoutes);
 app.use('/comment', commentsRoutes);

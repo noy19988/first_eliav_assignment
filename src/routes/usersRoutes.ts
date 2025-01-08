@@ -1,6 +1,5 @@
 import express, { Router } from 'express';
-import usersController, { getUserDetails } from '../controllers/usersController';
-import authMiddleware from '../middleware/authMiddleware';
+import usersController from '../controllers/usersController'; // ודא שהנתיב נכון
 
 const router: Router = express.Router();
 
@@ -15,11 +14,12 @@ const router: Router = express.Router();
  * @swagger
  * components:
  *   securitySchemes:
- *       bearerAuth:
- *           type: http
- *           scheme: bearer
- *           bearerFormat: JWT
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
  */
+
 
 /**
  * @swagger
@@ -30,14 +30,19 @@ const router: Router = express.Router();
  *       required:
  *         - email
  *         - password
+ *         - username
  *       properties:
+ *         username:
+ *           type: string
+ *           description: The username of the user
  *         email:
  *           type: string
- *           description: The user email
+ *           description: The email of the user
  *         password:
  *           type: string
- *           description: The user password
+ *           description: The password of the user
  *       example:
+ *         username: 'bob'
  *         email: 'bob@gmail.com'
  *         password: '123456'
  */
@@ -46,7 +51,7 @@ const router: Router = express.Router();
  * @swagger
  * /auth/register:
  *   post:
- *     summary: registers a new user
+ *     summary: Registers a new user
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -55,12 +60,16 @@ const router: Router = express.Router();
  *           schema:
  *             $ref: '#/components/schemas/User'
  *     responses:
- *       200:
- *         description: Registration success, return the new user
+ *       201:
+ *         description: Registration successful, returns the new user
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Invalid input
+ *       500:
+ *         description: Internal server error
  */
 router.post('/register', usersController.registerUser);
 
@@ -87,18 +96,15 @@ router.post('/register', usersController.registerUser);
  *                       accessToken:
  *                           type: string
  *                           description: JWT access token
- *                           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *                       refreshToken:
  *                           type: string
  *                           description: JWT refresh token
- *                           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *                       _id:
  *                           type: string
  *                           description: User ID
- *                           example: "60d0fe4f5311236168a109ca"
- *       '400':
+ *       400:
  *         description: Invalid email or password
- *       '500':
+ *       500:
  *         description: Internal server error
  */
 router.post('/login', usersController.loginUser);
@@ -111,10 +117,14 @@ router.post('/login', usersController.loginUser);
  *     tags: [Auth]
  *     description: Need to provide the refresh token in the auth header
  *     security:
- *       - bearerAuth: []
+ *       - bearerAuth: []  # וודא שאתה מבצע אימות בטוקן כאן
  *     responses:
  *       200:
  *         description: Logout completed successfully
+ *       401:
+ *         description: Unauthorized - Token not provided or invalid
+ *       500:
+ *         description: Internal server error
  */
 router.post('/logout', usersController.logoutUser);
 
@@ -150,7 +160,6 @@ router.post('/logout', usersController.logoutUser);
  */
 router.post('/refresh', usersController.refreshToken);
 
-
 /**
  * @swagger
  * /users/{id}:
@@ -184,7 +193,7 @@ router.post('/refresh', usersController.refreshToken);
  *       404:
  *         description: User not found
  */
-router.put('/:id', authMiddleware, usersController.updateUser);
+router.put('/:id', usersController.updateUser);
 
 /**
  * @swagger
@@ -207,10 +216,8 @@ router.put('/:id', authMiddleware, usersController.updateUser);
  *       404:
  *         description: User not found
  */
-router.delete('/:id', authMiddleware, usersController.deleteUser);
+router.delete('/:id', usersController.deleteUser);
 
-router.get('/:id', authMiddleware, getUserDetails); // נתיב לשליפת פרטי המשתמש
-
-
+router.get('/:id', usersController.getUserDetails); // Get user details by ID
 
 export default router;

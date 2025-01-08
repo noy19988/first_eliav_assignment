@@ -79,15 +79,20 @@ const loginUser = async (req, res) => {
 exports.loginUser = loginUser;
 // User logout
 const logoutUser = async (req, res) => {
-    const { refreshToken } = req.body;
-    console.log('Received refreshToken:', refreshToken); // לוג נוסף לבדיקה
+    var _a;
+    const refreshToken = (_a = req.headers['authorization']) === null || _a === void 0 ? void 0 : _a.split(' ')[1]; // שליפת הטוקן מ-Authorization header
+    console.log('Received refreshToken:', refreshToken);
     try {
+        if (!refreshToken) {
+            res.status(400).json({ message: 'Refresh token is required' });
+            return;
+        }
         const user = await user_1.default.findOne({ refreshTokens: refreshToken });
-        console.log('User found:', user); // בדוק אם המשתמש מזוהה
         if (!user) {
             res.status(404).json({ message: 'Invalid refresh token' });
             return;
         }
+        // אם נמצא, מסננים את הטוקן הנוכחי מתוך רשימת הטוקנים של המשתמש
         user.refreshTokens = user.refreshTokens.filter(token => token !== refreshToken);
         await user.save();
         res.status(200).json({ message: 'Logout successful' });

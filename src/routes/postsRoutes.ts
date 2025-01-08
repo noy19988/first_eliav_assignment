@@ -11,6 +11,37 @@ import {
 
 const router: Router = express.Router();
 
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Post:
+ *       type: object
+ *       required:
+ *         - title
+ *         - content
+ *         - author
+ *       properties:
+ *         title:
+ *           type: string
+ *           description: The title of the post
+ *         content:
+ *           type: string
+ *           description: The content of the post
+ *         author:
+ *           type: string
+ *           description: The ID of the user who created the post
+ *       example:
+ *         title: 'Sample Post'
+ *         content: 'This is a sample content for the post.'
+ *         author: '60b8d58f7c6b2d001c8b2d22'
+ */
+
+
+
+
+
 /**
  * @swagger
  * tags:

@@ -175,21 +175,19 @@ describe('User Controller Tests', () => {
     });
 
 
-    test('should fail to get user details with invalid token', async () => {
-        const invalidToken = 'invalidToken';  // טוקן שגוי
-        
-        console.log("Testing getting user details with invalid token for ID:", userId);
-        
+    test('should fail to logout with invalid refresh token', async () => {
+        const invalidRefreshToken = 'invalidRefreshToken'; // טוקן רענון לא תקני
+    
         const response = await request(app)
-            .get(`/users/${userId}`)
-            .set('Authorization', `Bearer ${invalidToken}`);  // שליחה עם טוקן שגוי
+            .post('/users/logout') // קריאה לפונקציית ההתנתקות
+            .send({ refreshToken: invalidRefreshToken }) // שליחת הטוקן הלא תקני
+            .set('Authorization', `Bearer ${accessToken}`); // צירוף טוקן גישה אם יש צורך בהזדהות
     
-        console.log("Response status:", response.status); // הדפסה של סטטוס התגובה
-        console.log("Response body:", response.body); // הדפסה של גוף התגובה
-    
-        expect(response.status).toBe(403);  // ציפייה למצב של 'אסור גישה'
-        expect(response.body.message).toBe('Invalid or expired token.');  // הודעה של טוקן שגוי
+        expect(response.status).toBe(404); // ציפייה למצב של "לא נמצא"
+        expect(response.body.message).toBe('Invalid refresh token'); // הודעת שגיאה המתארת את הבעיה
     });
+    
+    
     
     
     
@@ -221,18 +219,19 @@ describe('User Controller Tests', () => {
                 email: "newuser@example.com",
                 password: "password123"
             });
-
+    
         const refreshToken = loginResponse.body.refreshToken;
-
+    
         // עכשיו, שלח את הבקשה להתנתקות עם ה-refreshToken
         const logoutResponse = await request(app)
             .post('/users/logout')
-            .send({ refreshToken });
-
-        // ציפייה למצב הצלחה
+            .send({ refreshToken })  // לוודא שה-refreshToken נשלח כראוי
+            .set('Authorization', `Bearer ${refreshToken}`); // צירוף ה-Authorization header עם ה-refreshToken
+    
         expect(logoutResponse.status).toBe(200);
         expect(logoutResponse.body.message).toBe('Logout successful');
     });
+    
 
     test('should fail logout with invalid refresh token', async () => {
         const response = await request(app)

@@ -93,18 +93,22 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
 
 // User logout
 export const logoutUser = async (req: Request, res: Response): Promise<void> => {
-    const { refreshToken } = req.body;
-    console.log('Received refreshToken:', refreshToken); // לוג נוסף לבדיקה
+    const refreshToken = req.headers['authorization']?.split(' ')[1]; // שליפת הטוקן מ-Authorization header
+    console.log('Received refreshToken:', refreshToken);
 
     try {
-        const user = await User.findOne({ refreshTokens: refreshToken });
-        console.log('User found:', user); // בדוק אם המשתמש מזוהה
+        if (!refreshToken) {
+            res.status(400).json({ message: 'Refresh token is required' });
+            return 
+        }
 
+        const user = await User.findOne({ refreshTokens: refreshToken });
         if (!user) {
             res.status(404).json({ message: 'Invalid refresh token' });
             return;
         }
 
+        // אם נמצא, מסננים את הטוקן הנוכחי מתוך רשימת הטוקנים של המשתמש
         user.refreshTokens = user.refreshTokens.filter(token => token !== refreshToken);
         await user.save();
 
