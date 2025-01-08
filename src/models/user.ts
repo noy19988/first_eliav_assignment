@@ -1,6 +1,5 @@
 import mongoose, { Types } from "mongoose";
 
-// Interface לייצוג מסמך משתמש
 export interface IUser{
     _id:string 
     username: string;
@@ -10,7 +9,6 @@ export interface IUser{
     createdAt: Date;
 }
 
-// הגדרת הסכימה
 const userSchema =new mongoose.Schema<IUser>({
     username: {
         type: String,
@@ -37,6 +35,5 @@ const userSchema =new mongoose.Schema<IUser>({
     },
 });
 
-// ייצוא המודל
 const User =mongoose.model<IUser>("User",userSchema);
 export default User;

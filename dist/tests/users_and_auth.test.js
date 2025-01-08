@@ -15,7 +15,7 @@ let accessToken;
 let userId;
 beforeAll(async () => {
     console.log('beforeAll');
-    app = await (0, server_1.default)(); // הפעלת השרת
+    app = await (0, server_1.default)();
     await mongoose_1.default.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/test-db', {});
     await user_1.default.deleteMany();
     await post_1.default.deleteMany();
@@ -37,12 +37,12 @@ beforeAll(async () => {
     accessToken = loginResponse.body.token;
     console.log('userId token login:', loginResponse.body.token);
     userId = loginResponse.body.userId;
-    console.log('Login response body:', loginResponse.body); // הוסף את זה כדי לראות את כל התגובה
-    console.log('userId after login:', userId); // הדפס את ה-ID כדי לוודא שהוא לא undefined
+    console.log('Login response body:', loginResponse.body);
+    console.log('userId after login:', userId);
 });
 afterAll(async () => {
     console.log("afterAll");
-    await mongoose_1.default.connection.close(); // סגירת החיבור למסד נתונים
+    await mongoose_1.default.connection.close();
 });
 describe('User Controller Tests', () => {
     test('should register a new user', async () => {
@@ -60,7 +60,7 @@ describe('User Controller Tests', () => {
         const response = await (0, supertest_1.default)(app)
             .post('/users/register')
             .send({
-            username: '', // חסר שם משתמש
+            username: '',
             email: 'missingfield@example.com',
             password: 'password123',
         });
@@ -68,13 +68,10 @@ describe('User Controller Tests', () => {
         expect(response.body.message).toBe('All fields are required');
     });
     test('should fail to refresh token with invalid refresh token or user', async () => {
-        // צור טוקן רענון לא תקף
         const invalidRefreshToken = 'invalidRefreshToken';
-        // שלח בקשה עם ה-refresh token השגוי
         const response = await (0, supertest_1.default)(app)
             .post('/users/refresh')
             .send({ refreshToken: invalidRefreshToken });
-        // ציפייה שהתגובה תהיה שגיאה עם קוד סטטוס 403
         expect(response.status).toBe(403);
         expect(response.body.message).toBe('Invalid refresh token');
     });
@@ -93,7 +90,7 @@ describe('User Controller Tests', () => {
             .post('/users/login')
             .send({
             email: 'newuser@example.com',
-            password: 'wrongpassword', // סיסמה שגויה
+            password: 'wrongpassword',
         });
         expect(response.status).toBe(400);
         expect(response.body.message).toBe('Wrong password');
@@ -103,7 +100,7 @@ describe('User Controller Tests', () => {
             .post('/users/register')
             .send({
             username: 'existinguser',
-            email: 'newuser@example.com', // Same as the first user
+            email: 'newuser@example.com',
             password: 'password123',
         });
         expect(response.status).toBe(400);
@@ -122,35 +119,35 @@ describe('User Controller Tests', () => {
         expect(response.body.refreshToken).toBeDefined();
     });
     test('should get user details successfully', async () => {
-        console.log("Testing getting user details for ID:", userId); // הדפסה של ה-ID של המשתמש
+        console.log("Testing getting user details for ID:", userId);
         const response = await (0, supertest_1.default)(app)
-            .get(`/users/${userId}`) // שליחה של ה-ID הנכון
-            .set('Authorization', `Bearer ${accessToken}`); // צירוף טוקן הגישה
-        console.log("Response status:", response.status); // הדפסה של סטטוס התגובה
-        console.log("Response body:", response.body); // הדפסה של גוף התגובה
-        expect(response.status).toBe(200); // ציפייה למצב הצלחה
+            .get(`/users/${userId}`)
+            .set('Authorization', `Bearer ${accessToken}`);
+        console.log("Response status:", response.status);
+        console.log("Response body:", response.body);
+        expect(response.status).toBe(200);
         expect(response.body.username).toBe('newuser');
         expect(response.body.email).toBe('newuser@example.com');
     });
     test('should fail to get user details with non-existent user ID', async () => {
-        const invalidUserId = '677d9b8cc48f35c1eb52d444'; // ID לא קיים
+        const invalidUserId = '677d9b8cc48f35c1eb52d444';
         console.log("Testing getting user details for non-existent ID:", invalidUserId);
         const response = await (0, supertest_1.default)(app)
             .get(`/users/${invalidUserId}`)
-            .set('Authorization', `Bearer ${accessToken}`); // צירוף טוקן הגישה
-        console.log("Response status:", response.status); // הדפסה של סטטוס התגובה
-        console.log("Response body:", response.body); // הדפסה של גוף התגובה
-        expect(response.status).toBe(404); // ציפייה למצב של 'לא נמצא'
-        expect(response.body.message).toBe('User not found'); // הודעה שהמשתמש לא נמצא
+            .set('Authorization', `Bearer ${accessToken}`);
+        console.log("Response status:", response.status);
+        console.log("Response body:", response.body);
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe('User not found');
     });
     test('should fail to logout with invalid refresh token', async () => {
-        const invalidRefreshToken = 'invalidRefreshToken'; // טוקן רענון לא תקני
+        const invalidRefreshToken = 'invalidRefreshToken';
         const response = await (0, supertest_1.default)(app)
-            .post('/users/logout') // קריאה לפונקציית ההתנתקות
-            .send({ refreshToken: invalidRefreshToken }) // שליחת הטוקן הלא תקני
-            .set('Authorization', `Bearer ${accessToken}`); // צירוף טוקן גישה אם יש צורך בהזדהות
-        expect(response.status).toBe(404); // ציפייה למצב של "לא נמצא"
-        expect(response.body.message).toBe('Invalid refresh token'); // הודעת שגיאה המתארת את הבעיה
+            .post('/users/logout')
+            .send({ refreshToken: invalidRefreshToken })
+            .set('Authorization', `Bearer ${accessToken}`);
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe('Invalid refresh token');
     });
     test('should refresh the token successfully', async () => {
         const loginResponse = await (0, supertest_1.default)(app)
@@ -168,7 +165,6 @@ describe('User Controller Tests', () => {
         expect(refreshResponse.body.refreshToken).toBeDefined();
     });
     test('should logout the user successfully', async () => {
-        // שולחים את בקשת ההתנתקות עם ה-refreshToken
         const loginResponse = await (0, supertest_1.default)(app)
             .post('/users/login')
             .send({
@@ -176,11 +172,10 @@ describe('User Controller Tests', () => {
             password: "password123"
         });
         const refreshToken = loginResponse.body.refreshToken;
-        // עכשיו, שלח את הבקשה להתנתקות עם ה-refreshToken
         const logoutResponse = await (0, supertest_1.default)(app)
             .post('/users/logout')
-            .send({ refreshToken }) // לוודא שה-refreshToken נשלח כראוי
-            .set('Authorization', `Bearer ${refreshToken}`); // צירוף ה-Authorization header עם ה-refreshToken
+            .send({ refreshToken })
+            .set('Authorization', `Bearer ${refreshToken}`);
         expect(logoutResponse.status).toBe(200);
         expect(logoutResponse.body.message).toBe('Logout successful');
     });
@@ -199,7 +194,7 @@ describe('User Controller Tests', () => {
             .send({
             username: 'updatedUser',
             email: 'updateduser@example.com',
-            password: 'newpassword123', // עדכון סיסמה
+            password: 'newpassword123',
         });
         expect(response.status).toBe(200);
         expect(response.body.username).toBe('updatedUser');
@@ -210,32 +205,30 @@ describe('User Controller Tests', () => {
             .put(`/users/${userId}`)
             .set('Authorization', `Bearer ${accessToken}`)
             .send({
-            username: '', // חסר שם משתמש
-            email: '', // חסר מייל
+            username: '',
+            email: '',
         });
         expect(response.status).toBe(400);
-        expect(response.body.message).toBe('At least one field must be provided for update'); // עדכון כאן להודעה הנכונה
+        expect(response.body.message).toBe('At least one field must be provided for update');
     });
     test('should update username and email successfully', async () => {
         const response = await (0, supertest_1.default)(app)
             .put(`/users/${userId}`)
             .set('Authorization', `Bearer ${accessToken}`)
             .send({
-            username: 'updatedUser', // עדכון שם משתמש
-            email: 'updated@example.com', // עדכון מייל
+            username: 'updatedUser',
+            email: 'updated@example.com',
         });
         expect(response.status).toBe(200);
         expect(response.body.username).toBe('updatedUser');
         expect(response.body.email).toBe('updated@example.com');
     });
     test('should delete a user successfully', async () => {
-        // הדפסת ה-`userId` כדי לוודא שהוא לא undefined
         console.log("Deleting user with ID AT TEST:", userId);
         const response = await (0, supertest_1.default)(app)
-            .delete(`/users/${userId}`) // נשלח את ה-ID
-            .set('Authorization', `Bearer ${accessToken}`); // צירוף טוקן ההרשאה
+            .delete(`/users/${userId}`)
+            .set('Authorization', `Bearer ${accessToken}`);
         console.log("the token is:", accessToken);
-        // ציפייה שהתוצאה תהיה הצלחה
         expect(response.status).toBe(200);
         expect(response.body.message).toBe('User deleted successfully');
     });
@@ -248,36 +241,30 @@ describe('User Controller Tests', () => {
         expect(response.body.message).toBe('User not found');
     });
     test('should fail to update user if user not found', async () => {
-        const invalidUserId = '677d9b8cc48f35c1eb52d444'; // ID לא קיים
+        const invalidUserId = '677d9b8cc48f35c1eb52d444';
         const response = await (0, supertest_1.default)(app)
             .put(`/users/${invalidUserId}`)
-            .set('Authorization', `Bearer ${accessToken}`) // צירוף טוקן גישה
+            .set('Authorization', `Bearer ${accessToken}`)
             .send({
             username: 'updatedUser',
             email: 'updateduser@example.com',
             password: 'newpassword123',
         });
-        // ציפייה למצב של "משתמש לא נמצא"
         expect(response.status).toBe(404);
         expect(response.body.message).toBe('User not found');
     });
     test('should fail to refresh token with invalid refresh token or user', async () => {
-        // צור טוקן רענון לא תקף
         const invalidRefreshToken = 'invalidRefreshToken';
-        // שלח בקשה עם ה-refresh token השגוי
         const response = await (0, supertest_1.default)(app)
             .post('/users/refresh')
             .send({ refreshToken: invalidRefreshToken });
-        // ציפייה שהתגובה תהיה שגיאה עם קוד סטטוס 403
         expect(response.status).toBe(403);
         expect(response.body.message).toBe('Invalid refresh token');
     });
     test('should fail to refresh token when no refresh token is provided', async () => {
-        // שלח בקשה בלי לשלוח את ה-refresh token
         const response = await (0, supertest_1.default)(app)
             .post('/users/refresh')
             .send({});
-        // ציפייה שהתגובה תהיה שגיאה עם קוד סטטוס 400
         expect(response.status).toBe(400);
         expect(response.body.message).toBe('Refresh token is required');
     });

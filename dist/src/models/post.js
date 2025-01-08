@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
-// הגדרת הסכימה
 const postSchema = new mongoose_1.default.Schema({
     title: {
         type: String,
@@ -16,7 +15,7 @@ const postSchema = new mongoose_1.default.Schema({
     },
     author: {
         type: mongoose_1.default.Schema.Types.ObjectId,
-        ref: 'User', // קישור למשתמש שיצר את הפוסט
+        ref: 'User',
         required: true,
     },
     createdAt: {
@@ -24,6 +23,5 @@ const postSchema = new mongoose_1.default.Schema({
         default: Date.now,
     },
 });
-// ייצוא המודל
 const Post = mongoose_1.default.model("Post", postSchema);
 exports.default = Post;

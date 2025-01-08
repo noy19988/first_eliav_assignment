@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 
-// Interface לייצוג מסמך פוסט
 export interface IPost{
     title: string;
     content: string;
@@ -8,7 +7,6 @@ export interface IPost{
     createdAt: Date;
 }
 
-// הגדרת הסכימה
 const postSchema =new mongoose.Schema<IPost>({
     title: {
         type: String,
@@ -20,7 +18,7 @@ const postSchema =new mongoose.Schema<IPost>({
     },
     author: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // קישור למשתמש שיצר את הפוסט
+        ref: 'User', 
         required: true,
     },
     createdAt: {
@@ -29,7 +27,6 @@ const postSchema =new mongoose.Schema<IPost>({
     },
 });
 
-// ייצוא המודל
 const Post =mongoose.model<IPost>("Post",postSchema);
 export default Post;
 

@@ -46,7 +46,6 @@ beforeEach(async () => {
 });
 
 describe('Posts API', () => {
-    // בדיקה של יצירת פוסט
     test('should create a new post', async () => {
         const response = await request(app)
             .post('/post')
@@ -64,7 +63,6 @@ describe('Posts API', () => {
         expect(response.body.post.author).toBe(testUser);
     });
 
-    // בדיקה אם הפוסט נכשל אם הכותרת ריקה
     test('should fail to create a post if title is empty', async () => {
         const response = await request(app)
             .post('/post')
@@ -78,7 +76,6 @@ describe('Posts API', () => {
         expect(response.body.message).toBe('Title and Content are required');
     });
 
-    // בדיקה אם הפוסט נכשל אם התוכן ריק
     test('should fail to create a post if content is empty', async () => {
         const response = await request(app)
             .post('/post')
@@ -118,40 +115,38 @@ describe('Posts API', () => {
     
 
     test('should return 404 if post not found during update', async () => {
-        const invalidPostId = new mongoose.Types.ObjectId();  // ID לא תקני (פוסט שלא קיים)
+        const invalidPostId = new mongoose.Types.ObjectId();  
     
         const response = await request(app)
             .put(`/post/${invalidPostId}`)
             .set('Authorization', `Bearer ${accessToken}`)
             .send({ title: 'Updated Title', content: 'Updated Content' });
     
-        console.log("Response when post not found during update:", response.body);  // Debugging response
+        console.log("Response when post not found during update:", response.body);  
     
-        expect(response.status).toBe(404);  // מצפה ל-404
-        expect(response.body.message).toBe('Post not found');  // מצפה להודעה הזו
+        expect(response.status).toBe(404);  
+        expect(response.body.message).toBe('Post not found');  
     });
 
 
 
     test('should return 404 if there is an error updating the post', async () => {
-        const invalidPostId = new mongoose.Types.ObjectId();  // ID לא תקני
+        const invalidPostId = new mongoose.Types.ObjectId();  
         
         const response = await request(app)
             .put(`/post/${invalidPostId}`)
             .set('Authorization', `Bearer ${accessToken}`)
             .send({ title: 'Updated Title', content: 'Updated Content' });
     
-        console.log("Response when error occurs during update:", response.body);  // Debugging response
+        console.log("Response when error occurs during update:", response.body);  
     
-        // מצפים ל-404 במקרה של שגיאה בעדכון
         expect(response.status).toBe(404);
-        expect(response.body.message).toBe('Post not found');  // מצפה להודעת השגיאה הזו
+        expect(response.body.message).toBe('Post not found');  
     });
     
     
     
 
-    // בדיקה של עדכון פוסט
     test('should update a post', async () => {
         const postResponse = await request(app)
             .post('/post')
@@ -178,19 +173,17 @@ describe('Posts API', () => {
     test('should fail to refresh token with invalid refresh token or user', async () => {
         const invalidRefreshToken = 'invalidRefreshToken';
     
-        console.log('Sending invalid refresh token:', invalidRefreshToken);  // הדפסת הלוג
+        console.log('Sending invalid refresh token:', invalidRefreshToken);  
     
         const response = await request(app)
             .post('/users/refresh')
             .send({ refreshToken: invalidRefreshToken });
     
-        // ציפייה לתגובה עם שגיאה (403)
         expect(response.status).toBe(403);
         expect(response.body.message).toBe('Invalid refresh token');
     });
     
 
-    // בדיקה של עדכון פוסט עם ID לא תקין
     test('should fail to update a post with invalid ID', async () => {
         const response = await request(app)
             .put('/post/invalidId')
@@ -198,8 +191,8 @@ describe('Posts API', () => {
             .send({ title: 'Updated Title', content: 'Updated Content' });
     
         console.log("Update Post with Invalid ID - Response:", response.body);
-        expect(response.status).toBe(404);  // מצפה ל-404
-        expect(response.body).toEqual({ message: 'Post not found' });  // מצפה להודעה הזו
+        expect(response.status).toBe(404);  
+        expect(response.body).toEqual({ message: 'Post not found' });  
     });
 
 
@@ -228,7 +221,6 @@ describe('Posts API', () => {
         expect(response2.body.message).toBe('Title and Content are required');
     });
     
-    // בדיקה של מחיקת פוסט
     test('should delete a post', async () => {
         const postResponse = await request(app)
             .post('/post')
@@ -249,18 +241,16 @@ describe('Posts API', () => {
         expect(response.body.message).toBe('Post deleted successfully');
     });
 
-    // בדיקה של מחיקת פוסט עם ID לא תקין
     test('should fail to delete a post with invalid ID', async () => {
         const response = await request(app)
             .delete('/post/invalidId')
             .set('Authorization', `Bearer ${accessToken}`);
     
         console.log("Delete Post with Invalid ID - Response:", response.body);
-        expect(response.status).toBe(404);  // מצפה ל-404
-        expect(response.body).toEqual({ message: 'Post not found' });  // מצפה להודעה הזו
+        expect(response.status).toBe(404);  
+        expect(response.body).toEqual({ message: 'Post not found' });  
     });
 
-    // בדיקה אם הפוסט נוצר כראוי על פי נתונים
     test('should create a post successfully with valid title and content', async () => {
         const response = await request(app)
             .post('/post')
@@ -278,16 +268,14 @@ describe('Posts API', () => {
     });
 
     test('should return 404 if post not found during delete', async () => {
-        // יצירת ID לא תקני שיכלול פוסט לא קיים
-        const invalidPostId = new mongoose.Types.ObjectId();  // ID לא תקני
+        const invalidPostId = new mongoose.Types.ObjectId();  
     
         const response = await request(app)
             .delete(`/post/${invalidPostId}`)
             .set('Authorization', `Bearer ${accessToken}`);
     
-        console.log("Delete Post with Invalid ID - Response:", response.body);  // Debugging response
+        console.log("Delete Post with Invalid ID - Response:", response.body);  
     
-        // מצפים ל-404 במקרה שהפוסט לא נמצא
         expect(response.status).toBe(404);
         expect(response.body.message).toBe('Post not found');
     });

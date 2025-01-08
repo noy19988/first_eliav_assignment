@@ -5,20 +5,13 @@ import bodyParser from 'body-parser';
 import swaggerJsDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 
-// טעינת קובץ הסביבה
 dotenv.config();
 
-// הגדרת האפליקציה
 const app: Application = express();
 
-// Middleware
 app.use(bodyParser.json());
 
-console.log('JWT_SECRET:', process.env.JWT_SECRET);
-console.log('JWT_REFRESH_SECRET:', process.env.JWT_REFRESH_SECRET);
 
-
-// הגדרות Swagger
 const swaggerOptions = {
     swaggerDefinition: {
         openapi: '3.0.0',
@@ -38,7 +31,7 @@ const swaggerOptions = {
             },
         ],
     },
-    apis: ['./src/routes/*.ts'], // הפניה לקבצי ה-Routes ב-TypeScript
+    apis: ['./src/routes/*.ts'], 
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
@@ -51,18 +44,17 @@ import postsRoutes from './routes/postsRoutes';
 import commentsRoutes from './routes/commentsRoutes';
 
 
-app.use('/auth', usersRoutes);  // שים לב לשם הנתיב כאן!
+app.use('/auth', usersRoutes);  
 app.use('/users', usersRoutes);
 app.use('/post', postsRoutes);
 app.use('/comment', commentsRoutes);
 
-// חיבור ל-MongoDB
 mongoose
     .connect(process.env.MONGO_URI || 'mongodb://localhost:27017/rest-api')
     .then(() => console.log('Connected to MongoDB'))
     .catch((err) => console.error('Error connecting to MongoDB:', err.message));
 
-    const initApp = (): Application => app; // Return the app instance directly
+    const initApp = (): Application => app; 
 
 export default initApp;
     
@@ -70,7 +62,7 @@ export default initApp;
         const port = process.env.PORT || 3000;
         app.listen(port, () => {
             console.log(`Server is running on http://localhost:${port}`);
-            console.log(`Swagger documentation available at http://localhost:${port}/api-docs`);
+            console.log(`Swagger documentation available at http://localhost:${port}/rest-api`);
         });
 }
 

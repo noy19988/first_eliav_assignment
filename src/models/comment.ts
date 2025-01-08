@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 
-// Interface לייצוג מסמך תגובה
 export interface IComment extends mongoose.Document {
     content: string;
     postId: mongoose.Schema.Types.ObjectId;
@@ -8,7 +7,6 @@ export interface IComment extends mongoose.Document {
     createdAt: Date;
 }
 
-// הגדרת הסכימה
 const commentSchema = new mongoose.Schema<IComment>({
     content: {
         type: String,
@@ -16,24 +14,24 @@ const commentSchema = new mongoose.Schema<IComment>({
     },
     postId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Post', // קישור לפוסט שהתגובה שייכת לו
+        ref: 'Post', 
         required: true,
         validate: {
             validator: async function(postId: mongoose.Schema.Types.ObjectId) {
                 const post = await mongoose.model('Post').findById(postId);
-                return post != null; // לוודא שהפוסט קיים
+                return post != null;
             },
             message: 'Post not found',
         }
     },
     author: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // קישור למשתמש שיצר את התגובה
+        ref: 'User', 
         required: true,
         validate: {
             validator: async function(authorId: mongoose.Schema.Types.ObjectId) {
                 const user = await mongoose.model('User').findById(authorId);
-                return user != null; // לוודא שהמשתמש קיים
+                return user != null; 
             },
             message: 'User not found',
         }
@@ -44,6 +42,5 @@ const commentSchema = new mongoose.Schema<IComment>({
     },
 });
 
-// ייצוא המודל
 const Comment = mongoose.model<IComment>("Comment", commentSchema);
 export default Comment;

@@ -9,7 +9,6 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET || 'JWT_SECRET';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'JWT_REFRESH_SECRET';
 
-// Register a new user
 export const registerUser = async (req: Request, res: Response): Promise<void> => {
     const { username, email, password } = req.body;
 
@@ -25,10 +24,7 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
             return;
         }
 
-
-        console.log('Password before hashing:', password);
         const hashedPassword = await bcrypt.hash(password, 10);
-        console.log('Hashed password being saved:', hashedPassword);
 
         const newUser = new User({
             username,
@@ -45,33 +41,24 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
     }
 };
 
-
-// Generate tokens
 const generateTokens = (userId: string): { token: string; refreshToken: string } => {
     const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '3d' });
     const refreshToken = jwt.sign({ userId }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
     return { token, refreshToken };
 };
 
-// User login
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
     const { email, password } = req.body;
-    console.log('Login attempt with:', email, password);
 
     try {
         const user = await User.findOne({ email: email.toLowerCase() });
-        console.log('User fetched from DB:', user);
 
         if (!user) {
             res.status(404).json({ message: 'User not found' });
             return;
         }
 
-        console.log('Password provided:', password);
-        console.log('Password stored in DB:', user.password);
-
         const isPasswordValid = await bcrypt.compare(password, user.password);
-        console.log('Password validation result:', isPasswordValid);
 
         if (!isPasswordValid) {
             res.status(400).json({ message: 'Wrong password' });
@@ -89,12 +76,8 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
-
-
-// User logout
 export const logoutUser = async (req: Request, res: Response): Promise<void> => {
-    const refreshToken = req.headers['authorization']?.split(' ')[1]; // שליפת הטוקן מ-Authorization header
-    console.log('Received refreshToken:', refreshToken);
+    const refreshToken = req.headers['authorization']?.split(' ')[1];
 
     try {
         if (!refreshToken) {
@@ -108,7 +91,6 @@ export const logoutUser = async (req: Request, res: Response): Promise<void> => 
             return;
         }
 
-        // אם נמצא, מסננים את הטוקן הנוכחי מתוך רשימת הטוקנים של המשתמש
         user.refreshTokens = user.refreshTokens.filter(token => token !== refreshToken);
         await user.save();
 
@@ -118,8 +100,6 @@ export const logoutUser = async (req: Request, res: Response): Promise<void> => 
     }
 };
 
-
-// Refresh token
 export const refreshToken = async (req: Request, res: Response): Promise<void> => {
     const { refreshToken } = req.body;
 
@@ -128,10 +108,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
         return;
     }
 
-    console.log('Received refreshToken:', refreshToken);  // הוסף את הלוג הזה
-
     try {
-        // בדיקה אם הטוקן תקני
         const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as jwt.JwtPayload;
 
         const user = await User.findById(decoded.userId);
@@ -147,16 +124,13 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
 
         res.status(200).json({ token, refreshToken: newRefreshToken });
     } catch (err) {
-        console.error('Error refreshing token:', err);  // שגיאה אם הטוקן לא תקני
         res.status(403).json({ message: 'Invalid refresh token', error: (err as Error).message });
     }
 };
 
-// Update user
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
     const { username, email, password } = req.body;
 
-    // לא מבצעים בדיקה אם שדה מסוים ריק, רק אם הוא נשלח ונמצא
     const updates: any = {};
     if (username) updates.username = username;
     if (email) updates.email = email;
@@ -185,12 +159,8 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
     }
 };
 
-
-
-// Delete user
 export const deleteUser = async (req: Request, res: Response): Promise<void> => {
     try {
-        console.log('Deleting user withID at func:', req.params.id);  // לוג שמדפיס את ה-ID
         const deletedUser = await User.findByIdAndDelete(req.params.id);
         if (!deletedUser) {
             res.status(404).json({ message: 'User not found' });
@@ -202,24 +172,18 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
     }
 };
 
-
 export const getUserDetails = async (req: Request, res: Response): Promise<void> => {
     try {
-        console.log("Fetching user details for ID:", req.params.id); // הדפסה של ה-ID שנשלח בבקשה
-        const user = await User.findById(req.params.id).select('-password'); // שליפת המשתמש לפי ID
+        const user = await User.findById(req.params.id).select('-password');
         if (!user) {
-            console.log("User not found with ID:", req.params.id); // הדפסה אם לא נמצא משתמש
             res.status(404).json({ message: 'User not found' });
             return;
         }
-        console.log("User found:", user); // הדפסה אם המשתמש נמצא
-        res.status(200).json(user); // החזרת פרטי המשתמש
+        res.status(200).json(user);
     } catch (error) {
-        console.error("Error retrieving user details:", error); // הדפסה אם יש שגיאה
         res.status(500).json({ message: 'Error retrieving user details', error });
     }
 };
-
 
 export default {
     registerUser,

@@ -11,7 +11,6 @@ const user_1 = __importDefault(require("../models/user"));
 dotenv_1.default.config();
 const JWT_SECRET = process.env.JWT_SECRET || 'JWT_SECRET';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'JWT_REFRESH_SECRET';
-// Register a new user
 const registerUser = async (req, res) => {
     const { username, email, password } = req.body;
     try {
@@ -24,9 +23,7 @@ const registerUser = async (req, res) => {
             res.status(400).json({ message: 'User already exists' });
             return;
         }
-        console.log('Password before hashing:', password);
         const hashedPassword = await bcrypt_1.default.hash(password, 10);
-        console.log('Hashed password being saved:', hashedPassword);
         const newUser = new user_1.default({
             username,
             email: email.toLowerCase(),
@@ -41,27 +38,20 @@ const registerUser = async (req, res) => {
     }
 };
 exports.registerUser = registerUser;
-// Generate tokens
 const generateTokens = (userId) => {
     const token = jsonwebtoken_1.default.sign({ userId }, JWT_SECRET, { expiresIn: '3d' });
     const refreshToken = jsonwebtoken_1.default.sign({ userId }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
     return { token, refreshToken };
 };
-// User login
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
-    console.log('Login attempt with:', email, password);
     try {
         const user = await user_1.default.findOne({ email: email.toLowerCase() });
-        console.log('User fetched from DB:', user);
         if (!user) {
             res.status(404).json({ message: 'User not found' });
             return;
         }
-        console.log('Password provided:', password);
-        console.log('Password stored in DB:', user.password);
         const isPasswordValid = await bcrypt_1.default.compare(password, user.password);
-        console.log('Password validation result:', isPasswordValid);
         if (!isPasswordValid) {
             res.status(400).json({ message: 'Wrong password' });
             return;
@@ -77,11 +67,9 @@ const loginUser = async (req, res) => {
     }
 };
 exports.loginUser = loginUser;
-// User logout
 const logoutUser = async (req, res) => {
     var _a;
-    const refreshToken = (_a = req.headers['authorization']) === null || _a === void 0 ? void 0 : _a.split(' ')[1]; // שליפת הטוקן מ-Authorization header
-    console.log('Received refreshToken:', refreshToken);
+    const refreshToken = (_a = req.headers['authorization']) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
     try {
         if (!refreshToken) {
             res.status(400).json({ message: 'Refresh token is required' });
@@ -92,7 +80,6 @@ const logoutUser = async (req, res) => {
             res.status(404).json({ message: 'Invalid refresh token' });
             return;
         }
-        // אם נמצא, מסננים את הטוקן הנוכחי מתוך רשימת הטוקנים של המשתמש
         user.refreshTokens = user.refreshTokens.filter(token => token !== refreshToken);
         await user.save();
         res.status(200).json({ message: 'Logout successful' });
@@ -102,16 +89,13 @@ const logoutUser = async (req, res) => {
     }
 };
 exports.logoutUser = logoutUser;
-// Refresh token
 const refreshToken = async (req, res) => {
     const { refreshToken } = req.body;
     if (!refreshToken) {
         res.status(400).json({ message: 'Refresh token is required' });
         return;
     }
-    console.log('Received refreshToken:', refreshToken); // הוסף את הלוג הזה
     try {
-        // בדיקה אם הטוקן תקני
         const decoded = jsonwebtoken_1.default.verify(refreshToken, JWT_REFRESH_SECRET);
         const user = await user_1.default.findById(decoded.userId);
         if (!user || !user.refreshTokens.includes(refreshToken)) {
@@ -125,15 +109,12 @@ const refreshToken = async (req, res) => {
         res.status(200).json({ token, refreshToken: newRefreshToken });
     }
     catch (err) {
-        console.error('Error refreshing token:', err); // שגיאה אם הטוקן לא תקני
         res.status(403).json({ message: 'Invalid refresh token', error: err.message });
     }
 };
 exports.refreshToken = refreshToken;
-// Update user
 const updateUser = async (req, res) => {
     const { username, email, password } = req.body;
-    // לא מבצעים בדיקה אם שדה מסוים ריק, רק אם הוא נשלח ונמצא
     const updates = {};
     if (username)
         updates.username = username;
@@ -158,10 +139,8 @@ const updateUser = async (req, res) => {
     }
 };
 exports.updateUser = updateUser;
-// Delete user
 const deleteUser = async (req, res) => {
     try {
-        console.log('Deleting user withID at func:', req.params.id); // לוג שמדפיס את ה-ID
         const deletedUser = await user_1.default.findByIdAndDelete(req.params.id);
         if (!deletedUser) {
             res.status(404).json({ message: 'User not found' });
@@ -176,18 +155,14 @@ const deleteUser = async (req, res) => {
 exports.deleteUser = deleteUser;
 const getUserDetails = async (req, res) => {
     try {
-        console.log("Fetching user details for ID:", req.params.id); // הדפסה של ה-ID שנשלח בבקשה
-        const user = await user_1.default.findById(req.params.id).select('-password'); // שליפת המשתמש לפי ID
+        const user = await user_1.default.findById(req.params.id).select('-password');
         if (!user) {
-            console.log("User not found with ID:", req.params.id); // הדפסה אם לא נמצא משתמש
             res.status(404).json({ message: 'User not found' });
             return;
         }
-        console.log("User found:", user); // הדפסה אם המשתמש נמצא
-        res.status(200).json(user); // החזרת פרטי המשתמש
+        res.status(200).json(user);
     }
     catch (error) {
-        console.error("Error retrieving user details:", error); // הדפסה אם יש שגיאה
         res.status(500).json({ message: 'Error retrieving user details', error });
     }
 };

@@ -15,7 +15,6 @@ const authMiddleware = (req, res, next) => {
         }
         const token = authHeader.split(' ')[1];
         const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
-        // הוסף את ה-userId ל-req.user
         req.user = { userId: decoded.userId };
         console.log('Decoded userId from token:', decoded.userId);
         next();

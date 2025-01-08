@@ -19,7 +19,6 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction): void =
         const token = authHeader.split(' ')[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as CustomJwtPayload;
 
-        // הוסף את ה-userId ל-req.user
         req.user = { userId: decoded.userId };
         console.log('Decoded userId from token:', decoded.userId);
         next();

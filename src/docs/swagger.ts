@@ -16,7 +16,7 @@ const swaggerOptions: Options = {
       },
     ],
   },
-  apis: ["./src/routes/*.ts"], // תיעוד מתוך קבצי ה-Routes שעברו ל-TypeScript
+  apis: ["./src/routes/*.ts"], 
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);

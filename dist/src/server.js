@@ -9,15 +9,11 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
-// טעינת קובץ הסביבה
 dotenv_1.default.config();
-// הגדרת האפליקציה
 const app = (0, express_1.default)();
-// Middleware
 app.use(body_parser_1.default.json());
 console.log('JWT_SECRET:', process.env.JWT_SECRET);
 console.log('JWT_REFRESH_SECRET:', process.env.JWT_REFRESH_SECRET);
-// הגדרות Swagger
 const swaggerOptions = {
     swaggerDefinition: {
         openapi: '3.0.0',
@@ -37,7 +33,7 @@ const swaggerOptions = {
             },
         ],
     },
-    apis: ['./src/routes/*.ts'], // הפניה לקבצי ה-Routes ב-TypeScript
+    apis: ['./src/routes/*.ts'],
 };
 const swaggerDocs = (0, swagger_jsdoc_1.default)(swaggerOptions);
 app.use('/rest-api', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerDocs));
@@ -45,16 +41,15 @@ app.use('/rest-api', swagger_ui_express_1.default.serve, swagger_ui_express_1.de
 const usersRoutes_1 = __importDefault(require("./routes/usersRoutes"));
 const postsRoutes_1 = __importDefault(require("./routes/postsRoutes"));
 const commentsRoutes_1 = __importDefault(require("./routes/commentsRoutes"));
-app.use('/auth', usersRoutes_1.default); // שים לב לשם הנתיב כאן!
+app.use('/auth', usersRoutes_1.default);
 app.use('/users', usersRoutes_1.default);
 app.use('/post', postsRoutes_1.default);
 app.use('/comment', commentsRoutes_1.default);
-// חיבור ל-MongoDB
 mongoose_1.default
     .connect(process.env.MONGO_URI || 'mongodb://localhost:27017/rest-api')
     .then(() => console.log('Connected to MongoDB'))
     .catch((err) => console.error('Error connecting to MongoDB:', err.message));
-const initApp = () => app; // Return the app instance directly
+const initApp = () => app;
 exports.default = initApp;
 if (require.main === module) {
     const port = process.env.PORT || 3000;
