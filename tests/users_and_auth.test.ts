@@ -331,6 +331,38 @@ describe('User Controller Tests', () => {
         expect(response.status).toBe(404);
         expect(response.body.message).toBe('User not found');
     });
+
+
+    test('should fail to refresh token with invalid refresh token or user', async () => {
+        // צור טוקן רענון לא תקף
+        const invalidRefreshToken = 'invalidRefreshToken';
+        
+        // שלח בקשה עם ה-refresh token השגוי
+        const response = await request(app)
+            .post('/users/refresh')
+            .send({ refreshToken: invalidRefreshToken });
+        
+        // ציפייה שהתגובה תהיה שגיאה עם קוד סטטוס 403
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe('Invalid refresh token');
+    });
+
+
+
+    test('should fail to refresh token when no refresh token is provided', async () => {
+        // שלח בקשה בלי לשלוח את ה-refresh token
+        const response = await request(app)
+            .post('/users/refresh')
+            .send({});
+        
+        // ציפייה שהתגובה תהיה שגיאה עם קוד סטטוס 400
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe('Refresh token is required');
+    });
+    
+    
+
+
     
     
     
