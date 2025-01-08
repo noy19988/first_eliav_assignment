@@ -104,7 +104,9 @@ const refreshToken = async (req, res) => {
         res.status(400).json({ message: 'Refresh token is required' });
         return;
     }
+    console.log('Received refreshToken:', refreshToken); // הוסף את הלוג הזה
     try {
+        // בדיקה אם הטוקן תקני
         const decoded = jsonwebtoken_1.default.verify(refreshToken, JWT_REFRESH_SECRET);
         const user = await user_1.default.findById(decoded.userId);
         if (!user || !user.refreshTokens.includes(refreshToken)) {
@@ -118,7 +120,7 @@ const refreshToken = async (req, res) => {
         res.status(200).json({ token, refreshToken: newRefreshToken });
     }
     catch (err) {
-        console.error('Error refreshing token:', err);
+        console.error('Error refreshing token:', err); // שגיאה אם הטוקן לא תקני
         res.status(403).json({ message: 'Invalid refresh token', error: err.message });
     }
 };

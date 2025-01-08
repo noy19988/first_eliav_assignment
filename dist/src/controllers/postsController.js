@@ -41,75 +41,6 @@ const createPost = async (req, res) => {
     }
 };
 exports.createPost = createPost;
-// קבלת כל הפוסטים
-// export const getAllPosts = async (req: Request, res: Response): Promise<void> => {
-//     const { author, limit } = req.query;  // הכנס את הפרמטרים כראוי
-//     console.log("Getting all posts - Author:", author, "Limit:", limit);
-//     console.log("Full query parameters:", req.query);
-//     try {
-//         // אם יש author (למשל אם הוא לא ריק או undefined)
-//         if (author) {
-//             const posts = await Post.find({ author: author as string });
-//             if (posts.length === 0) {
-//                 console.log(`No posts found for author: ${author}`);
-//                 res.status(404).json({ message: `No posts found for author: ${author}` });
-//                 return;
-//             }
-//             res.status(200).json(posts);
-//             return;
-//         }
-//         // אם אין author, תחזיר את כל הפוסטים
-//         const posts = await Post.find().limit(Number(limit) || 10);  // ברירת מחדל ל-10 פוסטים
-//         console.log(`Found ${posts.length} posts`);
-//         res.status(200).json(posts);
-//     } catch (error) {
-//         console.error('Error fetching posts:', error);
-//         res.status(500).json({ message: 'Error fetching posts', error });
-//     }
-// };
-// // קבלת פוסט לפי ID
-// export const getPostById = async (req: Request, res: Response): Promise<void> => {
-//     const postId = req.params.id;
-//     console.log("Getting post by ID at func:", postId);
-//     // בדיקת תקינות ה-ID לפני ביצוע השאילתה
-//     if (!mongoose.Types.ObjectId.isValid(postId)) {
-//         res.status(400).json({ message: 'Invalid ID format' });
-//         return;
-//     }
-//     try {
-//         const post = await Post.findById(postId);
-//         if (!post) {
-//             res.status(404).json({ message: 'Post not found' });
-//             return;
-//         }
-//         res.status(200).json(post);
-//     } catch (error) {
-//         console.error('Error fetching post:', error);
-//         res.status(500).json({ message: 'Error fetching post', error });
-//     }
-// };
-// קבלת פוסטים לפי שולח
-// export const getPostsBySender = async (req: Request, res: Response): Promise<void> => {
-//     const sender = req.params.sender;
-//     console.log("Getting posts by sender at getPostsBySender:", sender);
-//     // בדיקת תקינות ה-ID של השולח
-//     if (!mongoose.Types.ObjectId.isValid(sender)) {
-//         res.status(400).json({ message: 'Invalid sender ID format' });
-//         return;
-//     }
-//     try {
-//         // אם ה-ID תקני, מחפשים את הפוסטים של השולח
-//         const posts = await Post.find({ author: sender });
-//         if (posts.length === 0) {
-//             res.status(404).json({ message: `No posts found for sender: ${sender}` });
-//             return;
-//         }
-//         res.status(200).json(posts);
-//     } catch (error) {
-//         console.error('Error fetching posts by sender:', error);
-//         res.status(500).json({ message: 'Error fetching posts by sender', error });
-//     }
-// };
 // עדכון פוסט
 const updatePost = async (req, res) => {
     const postId = req.params.id;
@@ -128,6 +59,7 @@ const updatePost = async (req, res) => {
     catch (error) {
         console.error('Error updating post:', error);
         res.status(400).json({ message: 'Invalid post ID or other error', error });
+        return;
     }
 };
 exports.updatePost = updatePost;

@@ -124,7 +124,10 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
         return;
     }
 
+    console.log('Received refreshToken:', refreshToken);  // הוסף את הלוג הזה
+
     try {
+        // בדיקה אם הטוקן תקני
         const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as jwt.JwtPayload;
 
         const user = await User.findById(decoded.userId);
@@ -138,9 +141,9 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
         user.refreshTokens.push(newRefreshToken);
         await user.save();
 
-        res.status(200).json({ token, refreshToken: newRefreshToken});
+        res.status(200).json({ token, refreshToken: newRefreshToken });
     } catch (err) {
-        console.error('Error refreshing token:', err);
+        console.error('Error refreshing token:', err);  // שגיאה אם הטוקן לא תקני
         res.status(403).json({ message: 'Invalid refresh token', error: (err as Error).message });
     }
 };

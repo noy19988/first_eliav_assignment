@@ -67,6 +67,17 @@ describe('User Controller Tests', () => {
         expect(response.status).toBe(400);
         expect(response.body.message).toBe('All fields are required');
     });
+    test('should fail to refresh token with invalid refresh token or user', async () => {
+        // צור טוקן רענון לא תקף
+        const invalidRefreshToken = 'invalidRefreshToken';
+        // שלח בקשה עם ה-refresh token השגוי
+        const response = await (0, supertest_1.default)(app)
+            .post('/users/refresh')
+            .send({ refreshToken: invalidRefreshToken });
+        // ציפייה שהתגובה תהיה שגיאה עם קוד סטטוס 403
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe('Invalid refresh token');
+    });
     test('should fail to login with non-existent email', async () => {
         const response = await (0, supertest_1.default)(app)
             .post('/users/login')
@@ -235,6 +246,20 @@ describe('User Controller Tests', () => {
         const response = await (0, supertest_1.default)(app)
             .delete(`/users/${invalidUserId}`)
             .set('Authorization', `Bearer ${accessToken}`);
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe('User not found');
+    });
+    test('should fail to update user if user not found', async () => {
+        const invalidUserId = '677d9b8cc48f35c1eb52d444'; // ID לא קיים
+        const response = await (0, supertest_1.default)(app)
+            .put(`/users/${invalidUserId}`)
+            .set('Authorization', `Bearer ${accessToken}`) // צירוף טוקן גישה
+            .send({
+            username: 'updatedUser',
+            email: 'updateduser@example.com',
+            password: 'newpassword123',
+        });
+        // ציפייה למצב של "משתמש לא נמצא"
         expect(response.status).toBe(404);
         expect(response.body.message).toBe('User not found');
     });

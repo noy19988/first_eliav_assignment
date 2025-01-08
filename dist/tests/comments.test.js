@@ -515,4 +515,25 @@ describe('Comments API', () => {
         expect(response.status).toBe(400);
         expect(response.body.message).toBe("Content is required");
     });
+    test('should return 404 if comment not found', async () => {
+        const invalidCommentId = '507f1f77bcf86cd799439011'; // ID לא קיים
+        const response = await (0, supertest_1.default)(app)
+            .delete(`/comments/${invalidCommentId}`)
+            .set('Authorization', `Bearer ${accessToken}`); // צירוף הטוקן של המשתמש
+        // ציפייה שהתגובה תהיה עם קוד סטטוס 404
+        expect(response.status).toBe(404);
+        expect(response.body.error).toBe('Comment not found');
+    });
+    test('should return 404 if comment not found when updating', async () => {
+        const invalidCommentId = '507f1f77bcf86cd799439011'; // ID לא קיים
+        const response = await (0, supertest_1.default)(app)
+            .put(`/comments/${invalidCommentId}`)
+            .set('Authorization', `Bearer ${accessToken}`) // צירוף הטוקן של המשתמש
+            .send({
+            content: 'Updated comment content',
+        });
+        // ציפייה שהתגובה תהיה עם קוד סטטוס 404
+        expect(response.status).toBe(404);
+        expect(response.body.error).toBe('Comment not found');
+    });
 });
