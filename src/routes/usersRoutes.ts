@@ -218,6 +218,49 @@ router.put('/:id', usersController.updateUser);
  */
 router.delete('/:id', usersController.deleteUser);
 
+
+/**
+ * @swagger
+ * /auth/google-login:
+ *   post:
+ *     summary: Authenticate a user using Google OAuth
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: Google ID token
+ *     responses:
+ *       200:
+ *         description: Successful login
+ *         content:
+ *           application/json:
+ *               schema:
+ *                   type: object
+ *                   properties:
+ *                       accessToken:
+ *                           type: string
+ *                           description: JWT access token
+ *                       refreshToken:
+ *                           type: string
+ *                           description: JWT refresh token
+ *                       userId:
+ *                           type: string
+ *                           description: User ID
+ *       400:
+ *         description: Invalid Google token
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/google-login', usersController.googleLogin);
+
+
+
 router.get('/:id', usersController.getUserDetails); // Get user details by ID
 
 export default router;

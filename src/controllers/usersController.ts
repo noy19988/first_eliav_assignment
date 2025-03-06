@@ -3,11 +3,20 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import User, { IUser } from '../models/user';
+import { OAuth2Client } from 'google-auth-library';
 
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'JWT_SECRET';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'JWT_REFRESH_SECRET';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID';
+
+const client = new OAuth2Client(GOOGLE_CLIENT_ID);
+
+
+
+
+
 
 export const registerUser = async (req: Request, res: Response): Promise<void> => {
     const { username, email, password } = req.body;
@@ -40,6 +49,67 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
         res.status(500).json({ message: 'Error registering user', error: (error as Error).message });
     }
 };
+
+
+export const googleLogin = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { token } = req.body;
+        if (!token) {
+            res.status(400).json({ message: 'No Google token provided' });
+            return;
+        }
+
+        // אימות ה-token מול Google
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: GOOGLE_CLIENT_ID,
+        });
+
+        const payload = ticket.getPayload();
+        if (!payload) {
+            res.status(400).json({ message: 'Invalid Google token' });
+            return;
+        }
+
+        const { sub: googleId, email, name, picture } = payload;
+
+        // חיפוש משתמש קיים לפי email
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            // יצירת משתמש חדש אם לא קיים
+            user = new User({
+                googleId,
+                username: name,
+                email,
+                imgUrl: picture,
+                password: await bcrypt.hash(googleId, 10), // יוצרים סיסמה רנדומלית על בסיס ה-Google ID
+                refreshTokens: [],
+            });
+            await user.save();
+        }
+
+        // יצירת טוקנים
+        const { token: accessToken, refreshToken } = generateTokens(user._id.toString());
+
+        // שמירת ה-refresh token במערכת
+        user.refreshTokens.push(refreshToken);
+        await user.save();
+
+        res.status(200).json({
+            message: 'Google Login successful',
+            token: accessToken,
+            refreshToken,
+            userId: user._id,
+            username: user.username,
+            imgUrl: user.imgUrl,
+        });
+    } catch (error) {
+        console.error('Google authentication failed:', error);
+        res.status(500).json({ message: 'Error authenticating with Google', error: (error as Error).message });
+    }
+};
+
 
 const generateTokens = (userId: string): { token: string; refreshToken: string } => {
     const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '3d' });
@@ -193,4 +263,6 @@ export default {
     updateUser,
     getUserDetails,
     deleteUser,
+    googleLogin,
+
 };
