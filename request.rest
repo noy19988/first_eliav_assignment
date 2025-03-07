@@ -76,9 +76,9 @@ POST http://localhost:3000/users/register
 Content-Type: application/json
 
 {
-  "username": "noy123456666666",
-  "email": "noy1234@gmail.commm",
-  "password": "1212"
+  "username": "ner",
+  "email": "ner@gmail.com",
+  "password": "2323666"
 }
 
 ### Login a user
@@ -87,9 +87,17 @@ Content-Type: application/json
 
 {
   
-  "email": "noy1234@gmail.comm",
-  "password": "1212"
+  "email": "ner@gmail.com",
+  "password": "2323666"
 }
+
+### העלאת תמונה ליוזר קיים
+PUT http://localhost:3000/users/67cac9e6249b7cba9e865375
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2NhYzllNjI0OWI3Y2JhOWU4NjUzNzUiLCJpYXQiOjE3NDEzNDQyNjYsImV4cCI6MTc0MTk0OTA2Nn0.JvE2MQqKpXWxMyexWQswy6Wp_eNeOBYXS5NZTZZC4uM
+Content-Type: multipart/form-data
+
+profileImage: @/Users/noyamsalem/Desktop/photo1.jpeg
+
 
 
 ### Get all users

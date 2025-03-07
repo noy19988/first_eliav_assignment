@@ -1,30 +1,32 @@
 import dotenv from 'dotenv';
 import express, { Application, Request, Response } from 'express';
 import mongoose from 'mongoose';
-import bodyParser from 'body-parser';
 import cors from 'cors';
 import swaggerJsDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import fileRouter from "./routes/fileRoutes";
+import multer from 'multer';
 
 dotenv.config();
 
 const app: Application = express();
 
+// 📌 Middleware לתמיכה ב-JSON וב-FormData
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // 📌 הוספת CORS כדי לאפשר חיבור לפרונט
 app.use(cors({
-    origin: "http://localhost:5173", // הפרונט שלך
+    origin: "http://localhost:5173",
     methods: "GET,POST,PUT,DELETE,OPTIONS",
     allowedHeaders: "Content-Type,Authorization",
     credentials: true
 }));
 
-// 📌 תמיכה בבקשות `OPTIONS`
-app.options("*", cors());
+// 📌 Middleware לניהול קבצים
+const upload = multer({ dest: "public/uploads/" });
+app.use("/uploads", express.static("public/uploads"));
 
-app.use(bodyParser.json());
-
-// 🔹 Swagger Docs
+// 📌 Swagger Docs
 const swaggerOptions = {
     swaggerDefinition: {
         openapi: '3.0.0',
@@ -54,8 +56,9 @@ app.use('/rest-api', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 import usersRoutes from './routes/usersRoutes';
 import postsRoutes from './routes/postsRoutes';
 import commentsRoutes from './routes/commentsRoutes';
+import fileRouter from "./routes/fileRoutes";
 
-app.use('/auth', usersRoutes);  
+app.use('/auth', usersRoutes);
 app.use('/users', usersRoutes);
 app.use('/post', postsRoutes);
 app.use('/comment', commentsRoutes);
@@ -74,10 +77,10 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/rest-api')
         process.exit(1);
     });
 
-const initApp = (): Application => app; 
+const initApp = (): Application => app;
 
 export default initApp;
-    
+
 if (require.main === module) {
     const port = process.env.PORT || 3000;
     app.listen(port, () => {

@@ -4,6 +4,10 @@ import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import User, { IUser } from '../models/user';
 import { OAuth2Client } from 'google-auth-library';
+import path from "path";
+import fs from "fs";
+
+
 
 dotenv.config();
 
@@ -39,6 +43,7 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
             username,
             email: email.toLowerCase(),
             password: hashedPassword,
+            imgUrl: "https://example.com/default-profile.png", // 🔹 קישור לתמונה דיפולטיבית
         });
 
         await newUser.save();
@@ -198,36 +203,65 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
     }
 };
 
+
+
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
-    const { username, email, password } = req.body;
-
-    const updates: any = {};
-    if (username) updates.username = username;
-    if (email) updates.email = email;
-    if (password) updates.password = await bcrypt.hash(password, 10);
-
-    if (Object.keys(updates).length === 0) {
-        res.status(400).json({ message: 'At least one field must be provided for update' });
-        return;
-    }
-
     try {
-        const updatedUser = await User.findByIdAndUpdate(
-            req.params.id,
-            updates,
-            { new: true }
-        ).select('-password');
+        console.log("🔹 Update user request received!");
+        console.log("🔹 Full Request Body:", req.body);
+        console.log("🔹 Uploaded File:", req.file);
+
+        if (!req.file) {
+            console.warn("⚠️ No file uploaded! Updating only username.");
+        }
+
+        const updates: any = {};
+
+        if (req.body.username) updates.username = req.body.username;
+
+        if (req.file) {
+            const fileExt = path.extname(req.file.originalname);
+            const newFileName = `${req.params.id}${fileExt}`;
+            const uploadPath = path.join("public/uploads/", newFileName);
+
+            const user = await User.findById(req.params.id);
+            if (user?.imgUrl && user.imgUrl !== "https://example.com/default-profile.png") {
+                const oldImagePath = path.join("public", user.imgUrl);
+                if (fs.existsSync(oldImagePath)) {
+                    try {
+                        fs.unlinkSync(oldImagePath);
+                    } catch (err) {
+                        console.error("❌ Failed to delete old image:", err);
+                    }
+                }
+            }
+
+            fs.renameSync(req.file.path, uploadPath);
+            updates.imgUrl = `${req.protocol}://${req.get('host')}/uploads/${newFileName}`;
+            console.log("🔹 Saving image URL in DB:", updates.imgUrl);
+        }
+
+        if (Object.keys(updates).length === 0) {
+            res.status(400).json({ message: "No data provided for update" });
+            return;
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(req.params.id, updates, { new: true }).select("-password");
 
         if (!updatedUser) {
-            res.status(404).json({ message: 'User not found' });
+            res.status(404).json({ message: "User not found" });
             return;
         }
 
         res.status(200).json(updatedUser);
     } catch (error) {
-        res.status(500).json({ message: 'Error updating user', error: (error as Error).message });
+        console.error("Error updating user:", error);
+        res.status(500).json({ message: "Error updating user", error: (error as Error).message });
     }
 };
+
+
+
 
 export const deleteUser = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -249,7 +283,12 @@ export const getUserDetails = async (req: Request, res: Response): Promise<void>
             res.status(404).json({ message: 'User not found' });
             return;
         }
-        res.status(200).json(user);
+        res.status(200).json({
+            _id: user._id, 
+            username: user.username,
+            email: user.email,  // ✅ הוספת email
+            imgUrl: user.imgUrl
+        });
     } catch (error) {
         res.status(500).json({ message: 'Error retrieving user details', error });
     }

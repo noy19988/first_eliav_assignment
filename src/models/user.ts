@@ -10,6 +10,8 @@ export interface IUser{
     imgUrl?: string
 }
 
+
+
 const userSchema =new mongoose.Schema<IUser>({
     username: {
         type: String,

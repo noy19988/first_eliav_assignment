@@ -1,7 +1,48 @@
-import express, { Router } from 'express';
-import usersController from '../controllers/usersController'; // ודא שהנתיב נכון
+import express from "express";
+import usersController from "../controllers/usersController";
+import multer from "multer";
+import path from "path";
 
-const router: Router = express.Router();
+
+const router = express.Router();
+
+
+
+
+
+// ✅ 1. הגדרת `multer` לאחסון תמונות בתיקיית `public/uploads`
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadPath = path.join(__dirname, "../../public/uploads/");
+        cb(null, uploadPath);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + path.extname(file.originalname);
+        cb(null, uniqueSuffix);
+    },
+});
+
+
+
+
+
+  
+  // ✅ 2. פילטר לבדוק שהקובץ הוא תמונה
+const fileFilter = (req: any, file: any, cb: any) => {
+    if (file.mimetype.startsWith("image/")) {
+        cb(null, true);
+    } else {
+        cb(new Error("Only image files are allowed!"), false);
+    }
+};
+  
+const upload = multer({ storage, fileFilter });
+  
+router.put("/:id", upload.single("profileImage"), usersController.updateUser);
+router.get("/:id", usersController.getUserDetails);
+
+
+
 
 /**
  * @swagger
@@ -260,7 +301,19 @@ router.delete('/:id', usersController.deleteUser);
 router.post('/google-login', usersController.googleLogin);
 
 
+router.put("/:id", upload.single("profileImage"), usersController.updateUser);
+
+
+
+router.put('/:id', upload.single('profileImage'), usersController.updateUser);
+
 
 router.get('/:id', usersController.getUserDetails); // Get user details by ID
+
+router.put('/:id', upload.single("profileImage"), usersController.updateUser);
+
+
+
+
 
 export default router;
