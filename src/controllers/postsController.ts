@@ -76,13 +76,17 @@ export const updatePost = async (req: Request, res: Response): Promise<void> => 
 
 export const getAllPosts = async (req: Request, res: Response) => {
     try {
-        const posts = await Post.find().sort({ createdAt: -1 });
+        const posts = await Post.find()
+            .populate("authorId", "username imgUrl") // ✅ הוספת פרטי המשתמש (שם ותמונה)
+            .sort({ createdAt: -1 });
+
         res.status(200).json(posts);
     } catch (error) {
         console.error("Error fetching posts:", error);
         res.status(500).json({ message: "Error fetching posts", error });
     }
 };
+
 
 export const deletePost = async (req: Request, res: Response): Promise<void> => {
     const postId = req.params.id;
@@ -93,14 +97,28 @@ export const deletePost = async (req: Request, res: Response): Promise<void> => 
     }
 
     try {
-        const post = await Post.findByIdAndDelete(postId);
+        const post = await Post.findById(postId);
         if (!post) {
             res.status(404).json({ message: "Post not found" });
             return;
         }
-        res.status(200).json({ message: "Post deleted successfully" });
+
+        // 🔥 מחיקת התמונה מהשרת אם קיימת
+        if (post.imageUrl) {
+            const imagePath = path.join(__dirname, "../../public/uploads", path.basename(post.imageUrl));
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+                console.log(`🗑️ תמונה נמחקה: ${imagePath}`);
+            } else {
+                console.log(`⚠️ קובץ תמונה לא נמצא: ${imagePath}`);
+            }
+        }
+
+        await Post.findByIdAndDelete(postId);
+        res.status(200).json({ message: "Post and associated image deleted successfully" });
     } catch (error) {
         console.error("Error deleting post:", error);
         res.status(500).json({ message: "Error deleting post", error });
     }
 };
+
