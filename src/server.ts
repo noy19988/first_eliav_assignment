@@ -5,6 +5,7 @@ import cors from 'cors';
 import swaggerJsDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import multer from 'multer';
+import fileRoutes from "./routes/fileRoutes"; 
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ const upload = multer({ dest: "public/uploads/" });
 app.use("/uploads", express.static("public/uploads"));
 
 // 📌 Swagger Docs
+
 const swaggerOptions = {
     swaggerDefinition: {
         openapi: '3.0.0',
@@ -58,9 +60,10 @@ import postsRoutes from './routes/postsRoutes';
 import commentsRoutes from './routes/commentsRoutes';
 import fileRouter from "./routes/fileRoutes";
 
+app.use("/file", fileRoutes);
 app.use('/auth', usersRoutes);
 app.use('/users', usersRoutes);
-app.use('/post', postsRoutes);
+app.use('/posts', postsRoutes); // 📌 שינוי נתיב ל-`posts`
 app.use('/comment', commentsRoutes);
 app.use("/file", fileRouter);
 app.use("/public", express.static("public"));

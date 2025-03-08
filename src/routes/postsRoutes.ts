@@ -1,7 +1,9 @@
 import express, { Router } from 'express';
+import multer from "multer";
+import path from "path";
 import authMiddleware from '../middleware/authMiddleware';
 import {
-    // getAllPosts,
+    getAllPosts,
     // getPostById,
     updatePost,
     // getPostsBySender,
@@ -11,7 +13,21 @@ import {
 
 const router: Router = express.Router();
 
+// 📌 הגדרת אחסון קבצים
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+      cb(null, "public/uploads/");
+  },
+  filename: (req, file, cb) => {
+      cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
 
+const upload = multer({ storage });
+
+// ✅ יצירת פוסט (כולל העלאת תמונה)
+router.post("/", authMiddleware, upload.single("image"), createPost);
+  
 /**
  * @swagger
  * components:
@@ -129,7 +145,7 @@ router.post('/', authMiddleware, createPost);
  *       500:
  *         description: Internal server error
  */
-router.delete('/:id', authMiddleware, deletePost);
+router.delete("/:id", authMiddleware, deletePost);
 
 // /**
 //  * @swagger
@@ -183,6 +199,9 @@ router.delete('/:id', authMiddleware, deletePost);
  *       500:
  *         description: Internal server error
  */
-router.put('/:id', authMiddleware, updatePost);
+router.put("/:id", authMiddleware, updatePost);
+
+router.get("/", getAllPosts);
+
 
 export default router;

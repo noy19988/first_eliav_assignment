@@ -125,12 +125,34 @@ Content-Type: application/json
 ### Create a new post with an access token
 POST http://localhost:3000/post
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzdlNjU1MjYyNGY1NGUyMmM3ZTkwNTUiLCJpYXQiOjE3MzYzMzY3NDMsImV4cCI6MTczNjU5NTk0M30.M74BCx0zlZWeLIVh7td0LQjtLDB5KezBsJs51Q0n9nE
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2NhYzllNjI0OWI3Y2JhOWU4NjUzNzUiLCJpYXQiOjE3NDE0MzYwMzcsImV4cCI6MTc0MTY5NTIzN30.UOaDYOUHHAD11L8C_fPfJRCx2gbxEnjFQO2zlBxNpak
 
 {
-  "title": "My First Post",
-  "content": "This is the content of my first post.",
-  "author": "677a8d259fe1036c9b6ea27f"
+  "recipeTitle": "Classic Chocolate Cake",
+  "category": ["Dessert", "Baking"],
+  "imageUrl": "https://example.com/chocolate-cake.jpg",
+  "difficulty": "medium",
+  "prepTime": 45,
+  "ingredients": [
+    "2 cups flour",
+    "1 cup sugar",
+    "1/2 cup cocoa powder",
+    "1 tsp baking soda",
+    "1/2 tsp salt",
+    "1 cup milk",
+    "1/2 cup vegetable oil",
+    "2 eggs",
+    "1 tsp vanilla extract"
+  ],
+  "instructions": [
+    "Preheat the oven to 180°C (350°F).",
+    "Grease a cake pan and set aside.",
+    "In a bowl, mix flour, sugar, cocoa powder, baking soda, and salt.",
+    "Add milk, oil, eggs, and vanilla extract. Mix until smooth.",
+    "Pour batter into the cake pan and bake for 30-35 minutes.",
+    "Let cool before serving. Enjoy!"
+  ],
+  "authorId": "67cac9e6249b7cba9e865375"
 }
 
 

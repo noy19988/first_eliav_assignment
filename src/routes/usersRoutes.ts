@@ -8,8 +8,6 @@ const router = express.Router();
 
 
 
-
-
 // ✅ 1. הגדרת `multer` לאחסון תמונות בתיקיית `public/uploads`
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -21,9 +19,6 @@ const storage = multer.diskStorage({
         cb(null, uniqueSuffix);
     },
 });
-
-
-
 
 
   
