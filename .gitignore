@@ -1,17 +1,49 @@
-# Ignore the node_modules directory
+# 🛑 התעלמות מתיקיית node_modules כדי למנוע העלאת קבצים מיותרים
 node_modules/
 
-# Ignore environment variables
+# 🛑 התעלמות מקובץ environment עם מפתחות רגישים
 .env
 
-# Ignore log files
+# 🛑 קבצי לוגים של מערכת
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Ignore OS-specific files
+# 🛑 קבצים של מערכת הפעלה שלא צריכים להיכנס לגיט
 .DS_Store
 Thumbs.db
 
-# Ignore IDE or editor settings
+# 🛑 קבצים של IDE / עורך קוד שלא צריכים להיות בגיט
 .idea/
 .vscode/
+*.swp
+*.swo
 
+# 🛑 קובצי קונפיגורציה פרטיים של Jest שלא רלוונטיים לכל המשתמשים
+jest.config.js
+coverage/
+
+# 🛑 קבצים בינאריים / מטמון של TypeScript
+dist/
+out/
+build/
+*.tsbuildinfo
+
+# 🛑 🔥 קובצי JSON עם מידע רגיש (כמו Service Account של Google)
+gen-lang-client-*.json
+
+# 🛑 🔥 קובצי בדיקות שיכולים להכיל מידע פנימי / זמני
+tests/**/*.json
+tests/**/*.test.ts
+tests/**/*.test.js
+
+# 🛑 🔥 קובצי API שעלולים לכלול מידע רגיש
+src/docs/swagger.ts
+src/docs/recipeApi.ts
+src/docs/geminiService.ts
+
+# 🛑 🔥 כל קובץ שמכיל סיסמאות או גישה לשירותים חיצוניים
+config/secrets.json
+config/private.key
+config/*.pem
