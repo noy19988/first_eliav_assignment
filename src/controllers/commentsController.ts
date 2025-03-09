@@ -50,19 +50,19 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
 export const getCommentsByPost = async (req: Request, res: Response): Promise<void> => {
     try {
         const postId = req.params.postId;
+
+        if (!mongoose.Types.ObjectId.isValid(postId)) {
+            res.status(400).json({ message: 'Invalid postId' });
+            return;
+        }
+
         const post = await Post.findById(postId);
-        if (!post) {      
+        if (!post) {
             res.status(404).json({ message: 'Post not found' });
             return;
         }
 
-        const comments = await Comment.find({ postId });
-        
-        if (comments.length === 0) {
-            res.status(404).json({ message: 'No comments found' });
-            return;
-        }
-
+        const comments = await Comment.find({ postId }).populate("author", "username imgUrl");
         res.status(200).json(comments);
 
     } catch (error) {

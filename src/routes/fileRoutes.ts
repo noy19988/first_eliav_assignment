@@ -35,5 +35,3 @@ router.post("/upload", upload.single("file"), (req: Request, res: Response): voi
 });
 
 export default router;
-
-

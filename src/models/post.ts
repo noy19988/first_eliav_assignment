@@ -10,6 +10,7 @@ export interface IPost extends mongoose.Document {
     instructions: string[];
     authorId: mongoose.Schema.Types.ObjectId;
     likes: number;
+    likedBy: mongoose.Schema.Types.ObjectId[];
     comments: mongoose.Schema.Types.ObjectId[];
     savedBy: mongoose.Schema.Types.ObjectId[];
     createdAt: Date;
@@ -25,6 +26,7 @@ const postSchema = new mongoose.Schema<IPost>({
     instructions: { type: [String], required: true },
     authorId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     likes: { type: Number, default: 0, min: 0 },
+    likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
     savedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     createdAt: { type: Date, default: Date.now },
