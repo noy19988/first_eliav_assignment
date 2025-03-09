@@ -6,6 +6,7 @@ import swaggerJsDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import multer from 'multer';
 import fileRoutes from "./routes/fileRoutes"; 
+import recipeRoutes from "./routes/recipeRoutes"; // ✅ ייבוא תקין אחרי התיקון
 
 dotenv.config();
 
@@ -14,6 +15,8 @@ const app: Application = express();
 // 📌 Middleware לתמיכה ב-JSON וב-FormData
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+
 
 // 📌 הוספת CORS כדי לאפשר חיבור לפרונט
 app.use(cors({
@@ -60,6 +63,8 @@ import postsRoutes from './routes/postsRoutes';
 import commentsRoutes from './routes/commentsRoutes';
 import fileRouter from "./routes/fileRoutes";
 
+
+app.use("/api/recipes", recipeRoutes);
 app.use("/file", fileRoutes);
 app.use('/auth', usersRoutes);
 app.use('/users', usersRoutes);

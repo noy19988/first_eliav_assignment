@@ -95,6 +95,14 @@ Content-Type: application/json
   "password": "2323666"
 }
 
+
+### חיפוש מתכונים לפי שם
+GET http://localhost:3000/api/recipes/search?query=pasta
+Content-Type: application/json
+
+
+
+
 ### העלאת תמונה ליוזר קיים
 PUT http://localhost:3000/users/67cac9e6249b7cba9e865375
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2NhYzllNjI0OWI3Y2JhOWU4NjUzNzUiLCJpYXQiOjE3NDEzNDQyNjYsImV4cCI6MTc0MTk0OTA2Nn0.JvE2MQqKpXWxMyexWQswy6Wp_eNeOBYXS5NZTZZC4uM
