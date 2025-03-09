@@ -10,6 +10,7 @@ import {
     deletePost,
     createPost,
     savePost,
+    getPostsByUser,
 } from '../controllers/postsController';
 
 const router: Router = express.Router();
@@ -201,6 +202,9 @@ router.delete("/:id", authMiddleware, deletePost);
  *         description: Internal server error
  */
 router.put("/:id", authMiddleware, upload.single("image"), updatePost);
+
+
+router.get("/user/:userId", getPostsByUser);
 
 
 router.get("/", getAllPosts);
