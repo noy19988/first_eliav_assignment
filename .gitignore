@@ -47,3 +47,7 @@ src/docs/geminiService.ts
 config/secrets.json
 config/private.key
 config/*.pem
+
+
+echo "gen-lang-client-*.json" >> .gitignore
+
