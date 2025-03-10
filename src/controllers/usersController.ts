@@ -111,6 +111,10 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
         });
     } catch (error) {
         console.error('Google authentication failed:', error);
+        if (error instanceof Error && error.message.includes('invalid')) {
+            res.status(400).json({ message: 'Invalid Google token', error: (error as Error).message });
+            return;
+        }
         res.status(500).json({ message: 'Error authenticating with Google', error: (error as Error).message });
     }
 };
@@ -152,12 +156,18 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const logoutUser = async (req: Request, res: Response): Promise<void> => {
-    const refreshToken = req.headers['authorization']?.split(' ')[1];
+    console.log("logoutUser called");
+    let refreshToken = req.headers['authorization']?.split(' ')[1];
+
+    if (!refreshToken) {
+        refreshToken = req.body.refreshToken;
+    }
 
     try {
+        console.log("refreshToken:", refreshToken);
         if (!refreshToken) {
             res.status(400).json({ message: 'Refresh token is required' });
-            return 
+            return;
         }
 
         const user = await User.findOne({ refreshTokens: refreshToken });

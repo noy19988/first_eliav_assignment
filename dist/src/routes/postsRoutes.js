@@ -4,9 +4,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+const multer_1 = __importDefault(require("multer"));
+const path_1 = __importDefault(require("path"));
 const authMiddleware_1 = __importDefault(require("../middleware/authMiddleware"));
+const generateNutritionController_1 = require("../controllers/generateNutritionController"); // 📌 ייבוא הפונקציה
 const postsController_1 = require("../controllers/postsController");
 const router = express_1.default.Router();
+// 📌 הגדרת אחסון קבצים
+const storage = multer_1.default.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "public/uploads/");
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path_1.default.extname(file.originalname));
+    },
+});
+const upload = (0, multer_1.default)({ storage });
+// ✅ יצירת פוסט (כולל העלאת תמונה)
+router.post("/", authMiddleware_1.default, upload.single("image"), postsController_1.createPost);
 /**
  * @swagger
  * components:
@@ -115,7 +130,7 @@ router.post('/', authMiddleware_1.default, postsController_1.createPost);
  *       500:
  *         description: Internal server error
  */
-router.delete('/:id', authMiddleware_1.default, postsController_1.deletePost);
+router.delete("/:id", authMiddleware_1.default, postsController_1.deletePost);
 // /**
 //  * @swagger
 //  * /posts/sender/{sender}:
@@ -166,5 +181,9 @@ router.delete('/:id', authMiddleware_1.default, postsController_1.deletePost);
  *       500:
  *         description: Internal server error
  */
-router.put('/:id', authMiddleware_1.default, postsController_1.updatePost);
+router.put("/:id", authMiddleware_1.default, upload.single("image"), postsController_1.updatePost);
+router.get("/user/:userId", postsController_1.getPostsByUser);
+router.get("/", postsController_1.getAllPosts);
+router.put("/:id/save", authMiddleware_1.default, postsController_1.savePost);
+router.get("/:id/nutrition", generateNutritionController_1.getPostNutrition); // ✅ נתיב חדש לשליפת ערכים תזונתיים
 exports.default = router;

@@ -73,14 +73,9 @@ export const getCommentsByPost = async (req: Request, res: Response): Promise<vo
 
 export const updateComment = async (req: Request, res: Response): Promise<void> => {
     try {
-        const comment = await Comment.findById(req.params.id);
-        if (!comment) {
-            res.status(404).json({ error: 'Comment not found' });
-            return;
-        }
-
-        if (comment.author.toString() !== req.user?.userId) {
-            res.status(403).json({ message: 'Unauthorized' });
+        // בדיקה שה-ID תקין
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            res.status(400).json({ message: 'Invalid comment ID' });
             return;
         }
 
@@ -89,22 +84,41 @@ export const updateComment = async (req: Request, res: Response): Promise<void> 
             return;
         }
 
-        const updatedComment1 = await Comment.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.status(200).json(updatedComment1);
-    } catch (error) {
-        console.error('Error updating comment:', error);
-        res.status(400).json({ error });
-    }
-};
-
-export const deleteComment = async (req: Request, res: Response): Promise<void> => {
-    try {
         const comment = await Comment.findById(req.params.id);
         if (!comment) {
             res.status(404).json({ error: 'Comment not found' });
             return;
         }
 
+        // בדיקה של הרשאות
+        if (comment.author.toString() !== req.user?.userId) {
+            res.status(403).json({ message: 'Unauthorized' });
+            return;
+        }
+
+        const updatedComment = await Comment.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.status(200).json(updatedComment);
+    } catch (error) {
+        console.error('Error updating comment:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+export const deleteComment = async (req: Request, res: Response): Promise<void> => {
+    try {
+        // בדיקה שה-ID תקין
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            res.status(400).json({ message: 'Invalid comment ID' });
+            return;
+        }
+
+        const comment = await Comment.findById(req.params.id);
+        if (!comment) {
+            res.status(404).json({ error: 'Comment not found' });
+            return;
+        }
+
+        // בדיקה של הרשאות
         if (comment.author.toString() !== req.user?.userId) {
             res.status(403).json({ message: 'Unauthorized' });
             return;
@@ -114,6 +128,6 @@ export const deleteComment = async (req: Request, res: Response): Promise<void> 
         res.status(200).json({ message: 'Comment deleted' });
     } catch (error) {
         console.error('Error deleting comment:', error);
-        res.status(500).json({ error });
+        res.status(500).json({ error: 'Server error' });
     }
 };

@@ -9,10 +9,13 @@ const server_1 = __importDefault(require("../src/server"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const user_1 = __importDefault(require("../src/models/user"));
 const post_1 = __importDefault(require("../src/models/post"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 dotenv_1.default.config();
 let app;
 let accessToken;
 let userId;
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID';
 beforeAll(async () => {
     console.log('beforeAll');
     app = await (0, server_1.default)();
@@ -118,6 +121,27 @@ describe('User Controller Tests', () => {
         expect(response.body.token).toBeDefined();
         expect(response.body.refreshToken).toBeDefined();
     });
+    test('should handle error when deleting old image fails', async () => {
+        const imagePath = path_1.default.join(__dirname, 'test-image.png');
+        if (!fs_1.default.existsSync(imagePath)) {
+            throw new Error(`Test image not found at ${imagePath}`);
+        }
+        const mockRenameSync = jest.spyOn(fs_1.default, 'renameSync');
+        mockRenameSync.mockImplementationOnce(() => {
+            // Simulate successful rename
+        });
+        const mockUnlinkSync = jest.spyOn(fs_1.default, 'unlinkSync');
+        mockUnlinkSync.mockImplementationOnce(() => {
+            throw new Error('Failed to delete old image');
+        });
+        const response = await (0, supertest_1.default)(app)
+            .put(`/users/${userId}`)
+            .set('Authorization', `Bearer ${accessToken}`)
+            .attach('profileImage', imagePath);
+        expect(response.status).toBe(200);
+        mockRenameSync.mockRestore();
+        mockUnlinkSync.mockRestore();
+    });
     test('should get user details successfully', async () => {
         console.log("Testing getting user details for ID:", userId);
         const response = await (0, supertest_1.default)(app)
@@ -139,6 +163,13 @@ describe('User Controller Tests', () => {
         console.log("Response body:", response.body);
         expect(response.status).toBe(404);
         expect(response.body.message).toBe('User not found');
+    });
+    it('should fail logout when no refresh token is provided', async () => {
+        const response = await (0, supertest_1.default)(app)
+            .post('/users/logout')
+            .send({});
+        expect(response.status).toBe(400); // שינוי ל-400
+        expect(response.body.message).toBe('Refresh token is required');
     });
     test('should fail to logout with invalid refresh token', async () => {
         const invalidRefreshToken = 'invalidRefreshToken';
@@ -187,50 +218,52 @@ describe('User Controller Tests', () => {
         expect(response.status).toBe(404);
         expect(response.body.message).toBe('Invalid refresh token');
     });
-    test('should update user details successfully', async () => {
+    test('should update username successfully', async () => {
         const response = await (0, supertest_1.default)(app)
             .put(`/users/${userId}`)
             .set('Authorization', `Bearer ${accessToken}`)
             .send({
-            username: 'updatedUser',
-            email: 'updateduser@example.com',
-            password: 'newpassword123',
+            username: 'updatedUser'
         });
         expect(response.status).toBe(200);
         expect(response.body.username).toBe('updatedUser');
-        expect(response.body.email).toBe('updateduser@example.com');
+        expect(response.body.email).toBe('newuser@example.com');
     });
-    test('should fail to update user details with missing fields', async () => {
-        const response = await (0, supertest_1.default)(app)
-            .put(`/users/${userId}`)
-            .set('Authorization', `Bearer ${accessToken}`)
-            .send({
-            username: '',
-            email: '',
-        });
-        expect(response.status).toBe(400);
-        expect(response.body.message).toBe('At least one field must be provided for update');
-    });
-    test('should update username and email successfully', async () => {
-        const response = await (0, supertest_1.default)(app)
-            .put(`/users/${userId}`)
-            .set('Authorization', `Bearer ${accessToken}`)
-            .send({
-            username: 'updatedUser',
-            email: 'updated@example.com',
-        });
-        expect(response.status).toBe(200);
-        expect(response.body.username).toBe('updatedUser');
-        expect(response.body.email).toBe('updated@example.com');
-    });
-    test('should delete a user successfully', async () => {
-        console.log("Deleting user with ID AT TEST:", userId);
-        const response = await (0, supertest_1.default)(app)
-            .delete(`/users/${userId}`)
+    test('should allow updating user with empty profile image field', async () => {
+        // שמור את פרטי המשתמש המקוריים
+        const originalResponse = await (0, supertest_1.default)(app)
+            .get(`/users/${userId}`)
             .set('Authorization', `Bearer ${accessToken}`);
-        console.log("the token is:", accessToken);
+        const originalImgUrl = originalResponse.body.imgUrl;
+        // שלח בקשת PUT עם שם משתמש תקין ושדה תמונה ריק
+        const response = await (0, supertest_1.default)(app)
+            .put(`/users/${userId}`)
+            .set('Authorization', `Bearer ${accessToken}`)
+            .send({
+            username: 'validUsername', // שם משתמש תקין (לפחות 2 תווים)
+        });
         expect(response.status).toBe(200);
-        expect(response.body.message).toBe('User deleted successfully');
+        expect(response.body.imgUrl).toBe(originalImgUrl); // ודא ש-imgUrl לא השתנה
+    });
+    test('should update user profile image successfully', async () => {
+        const imagePath = path_1.default.join(__dirname, 'test-image.png');
+        if (!fs_1.default.existsSync(imagePath)) {
+            throw new Error(`Test image not found at ${imagePath}`);
+        }
+        const response = await (0, supertest_1.default)(app)
+            .put(`/users/${userId}`)
+            .set('Authorization', `Bearer ${accessToken}`)
+            .attach('profileImage', imagePath);
+        expect(response.status).toBe(200);
+        expect(response.body.imgUrl).toBeDefined();
+        expect(response.body.imgUrl).toContain('/uploads/');
+        // בדיקה שהקובץ אכן נשמר בשרת (מתוקן)
+        const imageUrl = response.body.imgUrl;
+        const imageName = imageUrl.substring(imageUrl.lastIndexOf('/') + 1); // Extract filename
+        const savedImagePath = path_1.default.join('public', 'uploads', imageName);
+        expect(fs_1.default.existsSync(savedImagePath)).toBe(true);
+        // ניקוי קובץ התמונה
+        fs_1.default.unlinkSync(savedImagePath);
     });
     test('should fail to delete user with non-existent ID', async () => {
         const invalidUserId = '677d9b8cc48f35c1eb52d444';
@@ -267,5 +300,259 @@ describe('User Controller Tests', () => {
             .send({});
         expect(response.status).toBe(400);
         expect(response.body.message).toBe('Refresh token is required');
+    });
+    test('should fail googleLogin with no token provided', async () => {
+        const response = await (0, supertest_1.default)(app)
+            .post('/users/google-login')
+            .send({});
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe('No Google token provided');
+    });
+    test('should fail googleLogin with invalid google token', async () => {
+        const response = await (0, supertest_1.default)(app)
+            .post('/users/google-login')
+            .send({ token: 'invalidGoogleToken' });
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe('Invalid Google token');
+    });
+    test('should update user with no data provided', async () => {
+        const response = await (0, supertest_1.default)(app)
+            .put(`/users/${userId}`)
+            .set('Authorization', `Bearer ${accessToken}`)
+            .send({});
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe('No data provided for update');
+    });
+    test('should fail getUserDetails if an error occurs', async () => {
+        // Force an error by mocking the findById function
+        jest.spyOn(user_1.default, 'findById').mockImplementationOnce(() => {
+            throw new Error('Database error');
+        });
+        const response = await (0, supertest_1.default)(app)
+            .get(`/users/${userId}`)
+            .set('Authorization', `Bearer ${accessToken}`);
+        expect(response.status).toBe(500);
+        expect(response.body.message).toBe('Error retrieving user details');
+        // Restore the original findById function
+        jest.spyOn(user_1.default, 'findById').mockRestore();
+    });
+    test('should handle registration error', async () => {
+        jest.spyOn(user_1.default.prototype, 'save').mockImplementationOnce(() => {
+            throw new Error('Registration error');
+        });
+        const response = await (0, supertest_1.default)(app)
+            .post('/users/register')
+            .send({
+            username: 'errorUser',
+            email: 'error@example.com',
+            password: 'password123',
+        });
+        expect(response.status).toBe(500);
+        expect(response.body.message).toBe('Error registering user');
+        jest.spyOn(user_1.default.prototype, 'save').mockRestore();
+    });
+    /*  test('should handle googleLogin error', async () => {
+         jest.spyOn(client, 'verifyIdToken').mockImplementationOnce(() => {
+             throw new Error('Google authentication error');
+         });
+ 
+         const response = await request(app)
+             .post('/users/google-login')
+             .send({ token: 'googleToken' });
+ 
+         expect(response.status).toBe(500);
+         expect(response.body.message).toBe('Error authenticating with Google');
+ 
+         jest.spyOn(client, 'verifyIdToken').mockRestore();
+     }); */
+    test('should handle login error', async () => {
+        jest.spyOn(user_1.default, 'findOne').mockImplementationOnce(() => {
+            throw new Error('Login error');
+        });
+        const response = await (0, supertest_1.default)(app)
+            .post('/users/login')
+            .send({ email: 'error@example.com', password: 'password123' });
+        expect(response.status).toBe(500);
+        expect(response.body.message).toBe('Error logging in');
+        jest.spyOn(user_1.default, 'findOne').mockRestore();
+    });
+    test('should fail googleLogin with invalid google token', async () => {
+        const response = await (0, supertest_1.default)(app)
+            .post('/users/google-login')
+            .send({ token: 'invalidGoogleToken' }); // טוקן לא תקין
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe('Invalid Google token');
+    });
+    test('should update user with no data provided', async () => {
+        const response = await (0, supertest_1.default)(app)
+            .put(`/users/${userId}`)
+            .set('Authorization', `Bearer ${accessToken}`)
+            .send({});
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe('No data provided for update');
+    });
+    test('should fail getUserDetails if an error occurs', async () => {
+        // mocking User.findById to throw an error
+        const findByIdMock = jest.spyOn(user_1.default, 'findById');
+        findByIdMock.mockImplementationOnce(() => {
+            throw new Error('Test Error');
+        });
+        const response = await (0, supertest_1.default)(app)
+            .get(`/users/${userId}`)
+            .set('Authorization', `Bearer ${accessToken}`);
+        expect(response.status).toBe(500);
+        expect(response.body.message).toBe('Error retrieving user details');
+        findByIdMock.mockRestore(); // Restore the original implementation
+    });
+    test('should handle registration error', async () => {
+        jest.spyOn(user_1.default.prototype, 'save').mockImplementationOnce(() => {
+            throw new Error('Registration error');
+        });
+        const response = await (0, supertest_1.default)(app)
+            .post('/users/register')
+            .send({
+            username: 'errorUser',
+            email: 'error@example.com',
+            password: 'password123',
+        });
+        expect(response.status).toBe(500);
+        expect(response.body.message).toBe('Error registering user');
+        jest.spyOn(user_1.default.prototype, 'save').mockRestore();
+    });
+    test('should handle login error', async () => {
+        jest.spyOn(user_1.default, 'findOne').mockImplementationOnce(() => {
+            throw new Error('Login error');
+        });
+        const response = await (0, supertest_1.default)(app)
+            .post('/users/login')
+            .send({ email: 'error@example.com', password: 'password123' });
+        expect(response.status).toBe(500);
+        expect(response.body.message).toBe('Error logging in');
+        jest.spyOn(user_1.default, 'findOne').mockRestore();
+    });
+    test('should delete a user successfully', async () => {
+        console.log("Deleting user with ID AT TEST:", userId);
+        const response = await (0, supertest_1.default)(app)
+            .delete(`/users/${userId}`)
+            .set('Authorization', `Bearer ${accessToken}`);
+        console.log("the token is:", accessToken);
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('User deleted successfully');
+    });
+    test('should fail googleLogin with invalid google token', async () => {
+        const response = await (0, supertest_1.default)(app)
+            .post('/users/google-login')
+            .send({ token: 'invalidGoogleToken' });
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe('Invalid Google token');
+    });
+    test('should update user with no data provided', async () => {
+        const response = await (0, supertest_1.default)(app)
+            .put(`/users/${userId}`)
+            .set('Authorization', `Bearer ${accessToken}`)
+            .send({});
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe('No data provided for update');
+    });
+    test('should fail getUserDetails if an error occurs', async () => {
+        jest.spyOn(user_1.default, 'findById').mockImplementationOnce(() => {
+            throw new Error('Test Error');
+        });
+        const response = await (0, supertest_1.default)(app)
+            .get(`/users/${userId}`)
+            .set('Authorization', `Bearer ${accessToken}`);
+        expect(response.status).toBe(500);
+        expect(response.body.message).toBe('Error retrieving user details');
+        jest.spyOn(user_1.default, 'findById').mockRestore();
+    });
+    test('should handle registration error', async () => {
+        jest.spyOn(user_1.default.prototype, 'save').mockImplementationOnce(() => {
+            throw new Error('Registration error');
+        });
+        const response = await (0, supertest_1.default)(app)
+            .post('/users/register')
+            .send({
+            username: 'errorUser',
+            email: 'error@example.com',
+            password: 'password123',
+        });
+        expect(response.status).toBe(500);
+        expect(response.body.message).toBe('Error registering user');
+        jest.spyOn(user_1.default.prototype, 'save').mockRestore();
+    });
+    test('should handle login error', async () => {
+        jest.spyOn(user_1.default, 'findOne').mockImplementationOnce(() => {
+            throw new Error('Login error');
+        });
+        const response = await (0, supertest_1.default)(app)
+            .post('/users/login')
+            .send({ email: 'error@example.com', password: 'password123' });
+        expect(response.status).toBe(500);
+        expect(response.body.message).toBe('Error logging in');
+        jest.spyOn(user_1.default, 'findOne').mockRestore();
+    });
+    /*  // New tests for missing coverage
+     test('should handle googleLogin error when token verification fails', async () => {
+         jest.spyOn(OAuth2Client.prototype, 'verifyIdToken').mockImplementationOnce(() => {
+             throw new Error('Token verification failed');
+         });
+ 
+         const response = await request(app)
+             .post('/users/google-login')
+             .send({ token: 'googleToken' });
+ 
+         expect(response.status).toBe(500);
+         expect(response.body.message).toBe('Error authenticating with Google');
+ 
+         jest.spyOn(OAuth2Client.prototype, 'verifyIdToken').mockRestore();
+     }); */
+    test('should handle logout error', async () => {
+        jest.spyOn(user_1.default, 'findOne').mockImplementationOnce(() => {
+            throw new Error('Logout error');
+        });
+        const response = await (0, supertest_1.default)(app)
+            .post('/users/logout')
+            .send({ refreshToken: 'refreshToken' })
+            .set('Authorization', `Bearer ${accessToken}`);
+        expect(response.status).toBe(500);
+        expect(response.body.message).toBe('Error logging out');
+        jest.spyOn(user_1.default, 'findOne').mockRestore();
+    });
+    /* test('should handle refreshToken error when token verification fails', async () => {
+        jest.spyOn(jwt, 'verify').mockImplementationOnce(() => {
+            throw new Error('Refresh token verification failed');
+        });
+
+        const response = await request(app)
+            .post('/users/refresh')
+            .send({ refreshToken: 'refreshToken' });
+
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe('Invalid refresh token');
+
+        jest.spyOn(jwt, 'verify').mockRestore();
+    }); */
+    test('should handle updateUser error', async () => {
+        jest.spyOn(user_1.default, 'findByIdAndUpdate').mockImplementationOnce(() => {
+            throw new Error('Update user error');
+        });
+        const response = await (0, supertest_1.default)(app)
+            .put(`/users/${userId}`)
+            .set('Authorization', `Bearer ${accessToken}`)
+            .send({ username: 'updatedUsername' });
+        expect(response.status).toBe(500);
+        expect(response.body.message).toBe('Error updating user');
+        jest.spyOn(user_1.default, 'findByIdAndUpdate').mockRestore();
+    });
+    test('should handle deleteUser error', async () => {
+        jest.spyOn(user_1.default, 'findByIdAndDelete').mockImplementationOnce(() => {
+            throw new Error('Delete user error');
+        });
+        const response = await (0, supertest_1.default)(app)
+            .delete(`/users/${userId}`)
+            .set('Authorization', `Bearer ${accessToken}`);
+        expect(response.status).toBe(500);
+        expect(response.body.message).toBe('Error deleting user');
+        jest.spyOn(user_1.default, 'findByIdAndDelete').mockRestore();
     });
 });

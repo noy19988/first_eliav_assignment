@@ -193,37 +193,47 @@ export const deletePost = async (req: Request, res: Response): Promise<void> => 
 
 export const savePost = async (req: Request, res: Response): Promise<void> => {
     try {
-      const postId = req.params.id;
-      const userId = req.user?.userId;
-  
-      if (!userId) {
-        res.status(401).json({ message: "Unauthorized" });
-        return;
-      }
-  
-      const post = await Post.findById(postId);
-      if (!post) {
-        res.status(404).json({ message: "Post not found" });
-        return;
-      }
-  
-      const userIdObjectId = new mongoose.Types.ObjectId(userId);
-  
-      const isSaved = post.savedBy.some((id) => id.toString() === userId);
-  
-      if (isSaved) {
-        post.savedBy = post.savedBy.filter((id) => id.toString() !== userId);
-      } else {
-        post.savedBy.push(userIdObjectId as unknown as mongoose.Schema.Types.ObjectId);
-      }
-  
-      await post.save();
-  
-      res.status(200).json({ message: isSaved ? "Post unsaved" : "Post saved" });
+        const postId = req.params.id;
+        const userId = req.user?.userId;
+
+        if (!userId) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
+
+        try {
+            const post = await Post.findById(postId);
+            if (!post) {
+                res.status(404).json({ message: "Post not found" });
+                return;
+            }
+
+            const userIdObjectId = new mongoose.Types.ObjectId(userId);
+
+            const isSaved = post.savedBy.some((id) => id.toString() === userId);
+
+            if (isSaved) {
+                post.savedBy = post.savedBy.filter((id) => id.toString() !== userId);
+            } else {
+                post.savedBy.push(userIdObjectId as unknown as mongoose.Schema.Types.ObjectId);
+            }
+
+            await post.save();
+
+            res.status(200).json({ message: isSaved ? "Post unsaved" : "Post saved" });
+        } catch (error: any) {
+            if (error.name === "CastError") {
+                res.status(404).json({ message: "Post not found" });
+            } else {
+                console.error("Error saving/unsaving post:", error);
+                res.status(500).json({ message: "Error saving/unsaving post", error });
+            }
+        }
     } catch (error) {
-      res.status(500).json({ message: "Error saving/unsaving post", error });
+        console.error("Error saving/unsaving post:", error);
+        res.status(500).json({ message: "Error saving/unsaving post", error });
     }
-  };
+};
 
   export const getPostsByUser = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -246,35 +256,3 @@ export const savePost = async (req: Request, res: Response): Promise<void> => {
 };
 
 
-export const getPostNutrition = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const postId = req.params.id;
-
-        // 🔹 בדיקה שה-ID תקין
-        if (!postId) {
-            res.status(400).json({ message: "Post ID is required" });
-            return;
-        }
-
-        // 🔹 חיפוש הפוסט במסד הנתונים
-        const post = await Post.findById(postId);
-        if (!post) {
-            res.status(404).json({ message: "Post not found" });
-            return;
-        }
-
-        // 🔥 קריאה ל-Gemini לקבלת מידע תזונתי
-        const nutritionalData = await getNutritionalValues(post.recipeTitle, post.ingredients, post.instructions);
-
-        if (!nutritionalData) {
-            res.status(500).json({ message: "Failed to fetch nutritional values" });
-            return;
-        }
-
-        res.status(200).json(nutritionalData);
-
-    } catch (error) {
-        console.error("❌ שגיאה בשליפת מידע תזונתי:", error);
-        res.status(500).json({ message: "Error fetching nutritional values", error });
-    }
-};

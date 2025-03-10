@@ -4,8 +4,33 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const usersController_1 = __importDefault(require("../controllers/usersController")); // ודא שהנתיב נכון
+const usersController_1 = __importDefault(require("../controllers/usersController"));
+const multer_1 = __importDefault(require("multer"));
+const path_1 = __importDefault(require("path"));
 const router = express_1.default.Router();
+// ✅ 1. הגדרת `multer` לאחסון תמונות בתיקיית `public/uploads`
+const storage = multer_1.default.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadPath = path_1.default.join(__dirname, "../../public/uploads/");
+        cb(null, uploadPath);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + path_1.default.extname(file.originalname);
+        cb(null, uniqueSuffix);
+    },
+});
+// ✅ 2. פילטר לבדוק שהקובץ הוא תמונה
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+        cb(null, true);
+    }
+    else {
+        cb(new Error("Only image files are allowed!"), false);
+    }
+};
+const upload = (0, multer_1.default)({ storage, fileFilter });
+router.put("/:id", upload.single("profileImage"), usersController_1.default.updateUser);
+router.get("/:id", usersController_1.default.getUserDetails);
 /**
  * @swagger
  * tags:
@@ -211,5 +236,47 @@ router.put('/:id', usersController_1.default.updateUser);
  *         description: User not found
  */
 router.delete('/:id', usersController_1.default.deleteUser);
+/**
+ * @swagger
+ * /auth/google-login:
+ *   post:
+ *     summary: Authenticate a user using Google OAuth
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: Google ID token
+ *     responses:
+ *       200:
+ *         description: Successful login
+ *         content:
+ *           application/json:
+ *               schema:
+ *                   type: object
+ *                   properties:
+ *                       accessToken:
+ *                           type: string
+ *                           description: JWT access token
+ *                       refreshToken:
+ *                           type: string
+ *                           description: JWT refresh token
+ *                       userId:
+ *                           type: string
+ *                           description: User ID
+ *       400:
+ *         description: Invalid Google token
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/google-login', usersController_1.default.googleLogin);
+router.put("/:id", upload.single("profileImage"), usersController_1.default.updateUser);
+router.put('/:id', upload.single('profileImage'), usersController_1.default.updateUser);
 router.get('/:id', usersController_1.default.getUserDetails); // Get user details by ID
+router.put('/:id', upload.single("profileImage"), usersController_1.default.updateUser);
 exports.default = router;

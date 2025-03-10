@@ -35,12 +35,9 @@ gen-lang-client-*.json
 
 # 🛑 🔥 קובצי בדיקות שיכולים להכיל מידע פנימי / זמני
 tests/**/*.json
-tests/**/*.test.ts
-tests/**/*.test.js
 
 # 🛑 🔥 קובצי API שעלולים לכלול מידע רגיש
 src/docs/swagger.ts
-src/docs/recipeApi.ts
 src/docs/geminiService.ts
 
 # 🛑 🔥 כל קובץ שמכיל סיסמאות או גישה לשירותים חיצוניים

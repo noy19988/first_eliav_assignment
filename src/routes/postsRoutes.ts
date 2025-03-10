@@ -2,7 +2,7 @@ import express, { Router } from 'express';
 import multer from "multer";
 import path from "path";
 import authMiddleware from '../middleware/authMiddleware';
-import { getPostNutrition } from "../controllers/postsController"; // 📌 ייבוא הפונקציה
+import { getPostNutrition } from "../controllers/generateNutritionController"; // 📌 ייבוא הפונקציה
 
 import {
     getAllPosts,

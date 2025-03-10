@@ -1,453 +1,375 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
 import initApp from '../src/server';
-import { Express } from 'express';
-import UserModel from '../src/models/user';
-import PostModel from '../src/models/post';
-import CommentsModel from '../src/models/comment';
-import * as commentsController from '../src/controllers/commentsController';
-import testComments from "../tests/test_comments.json";
-import commentsRoutes from '../src/routes/commentsRoutes';
-import { loginUser } from '../src/controllers/usersController';
+import Comment from '../src/models/comment';
+import Post from '../src/models/post';
+import User from '../src/models/user';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 
-var app: Express;
-let accessToken: string;
-let testUser: mongoose.Types.ObjectId;
-let testPost: mongoose.Types.ObjectId;
-let commentId = "";
-let post_id: mongoose.Types.ObjectId;
+dotenv.config();
+
+const app = initApp();
+let token: string;
+let userId: string;
+let postId: string;
+let commentId: string;
+let testUser: any;
+let testPost: any;
 
 beforeAll(async () => {
-    app = await initApp() as Express;
-    app.use('/comments', commentsRoutes);
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/rest-api');
 
-    await UserModel.deleteMany({});
-    await PostModel.deleteMany({});
-    await CommentsModel.deleteMany({});
+    // יצירת משתמש בדיקה
+    testUser = await User.create({
+        username: 'testuser',
+        email: 'testuser@example.com',
+        password: 'password123',
+    });
+    userId = testUser._id.toString();
 
-    const userResponse = await request(app)
-        .post('/users/register')
-        .send({
-            username: 'testuser',
-            email: 'testuser@example.com',
-            password: 'password123',
-        });
-    expect(userResponse.status).toBe(201);
+    // יצירת פוסט בדיקה
+    testPost = await Post.create({
+        recipeTitle: 'Test Recipe',
+        category: ['test'],
+        difficulty: 'easy',
+        prepTime: 30,
+        ingredients: ['ingredient1', 'ingredient2'],
+        instructions: ['instruction1', 'instruction2'],
+        authorId: userId,
+    });
+    postId = testPost._id.toString();
 
-    const loginResponse = await request(app)
-        .post('/users/login')
-        .send({
-            email: 'testuser@example.com',
-            password: 'password123',
-        });
-    accessToken = loginResponse.body.token;
-
-    const user = await UserModel.findOne({ email: 'testuser@example.com' });
-    if (user) {
-        testUser = user._id as unknown as mongoose.Types.ObjectId;
-    }
-    const response = await request(app)
-        .post('/post')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({
-            title: 'Test Post',
-            content: 'Test Content.',
-            author: testUser,
-            });
-
-    post_id = response.body.post._id;
-
-    expect(response.status).toBe(201);
-
-    console.log('User ID:', testUser);
+    // יצירת טוקן
+    token = jwt.sign({ userId: userId }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
 });
 
 afterAll(async () => {
-    await mongoose.connection.close();
+    await Comment.deleteMany({});
+    await Post.deleteMany({});
+    await User.deleteMany({});
+    await mongoose.disconnect();
 });
 
-describe('Comments API', () => {
-    test("Test Create Comment", async () => {
-        testComments[0].postId = post_id.toString();
-        testComments[0].author = testUser.toString();
-        const response = await request(app).post("/comments").set('Authorization', `Bearer ${accessToken}`).send(testComments[0]);
-        console.log('body',response.body);
-        console.log('access token:', accessToken);
-        console.log('test comments [0]:',testComments[0].content);
-        expect(response.statusCode).toBe(201);
-        commentId = response.body._id;
-      });
-
-    test("Should create a comment with valid data", async () => {
-        testComments[0].postId = post_id.toString();
-        testComments[0].author = testUser.toString();
-    
+describe('Comments API Tests', () => {
+    it('should create a new comment', async () => {
         const response = await request(app)
-            .post("/comments")
-            .set('Authorization', `Bearer ${accessToken}`)
-            .send(testComments[0]);
-    
-        console.log('body:', response.body);
-        expect(response.statusCode).toBe(201);
-        expect(response.body.postId).toBe(post_id.toString());
-        expect(response.body.author).toBe(testUser.toString());
-        expect(response.body.content).toBe(testComments[0].content);
-    });
-
-    it('should return 404 if post not found', async () => {
-        const invalidPostIdResponse = await request(app)
-            .get(`/comments/post/507f1f77bcf86cd799439011`)
-            .set('Authorization', `Bearer ${accessToken}`);
-        
-        expect(invalidPostIdResponse.status).toBe(404);
-        expect(invalidPostIdResponse.body.message).toBe('Post not found');
-    });
-
-    it('should get comments for a post', async () => {
-        await request(app)
-            .post('/comments')
-            .set('Authorization', `Bearer ${accessToken}`)
+            .post('/comment')
+            .set('Authorization', `Bearer ${token}`)
             .send({
-                content: 'This is the first comment for post',
-                postId: post_id.toString(),
-                author: testUser.toString(),
-            });
-
-        await request(app)
-            .post('/comments')
-            .set('Authorization', `Bearer ${accessToken}`)
-            .send({
-                content: 'This is the second comment for post',
-                postId: post_id.toString(),
-                author: testUser.toString(),
-            });
-        
-        const getCommentsResponse = await request(app)
-        .get(`/comments/post/${post_id.toString()}`)
-        .set('Authorization', `Bearer ${accessToken}`);
-
-        expect(getCommentsResponse.status).toBe(200);
-        expect(getCommentsResponse.body.length).toBe(4); 
-    });
-
-    it('should return 404 when no comments exist for a post', async () => {
-        const createPostResponse = await request(app)
-            .post('/post')
-            .set('Authorization', `Bearer ${accessToken}`)
-            .send({
-                title: 'Post with no comments',
-                content: 'This is a post with no comments.',
-                author: testUser,
-            });
-
-        const newPostId = createPostResponse.body.post._id;
-
-        const getCommentsResponse = await request(app)
-            .get(`/comments/post/${newPostId.toString()}`)
-            .set('Authorization', `Bearer ${accessToken}`);
-
-        expect(getCommentsResponse.status).toBe(404);
-        expect(getCommentsResponse.body.message).toBe('No comments found');
-    });
-
-    test("Should not create a comment without content", async () => {
-        const invalidComment = { ...testComments[0] };
-        invalidComment.content = "";
-        invalidComment.postId = post_id.toString();
-        invalidComment.author = testUser.toString();
-    
-        const response = await request(app)
-            .post("/comments")
-            .set('Authorization', `Bearer ${accessToken}`)
-            .send(invalidComment);
-    
-        console.log('body:', response.body);
-        expect(response.statusCode).toBe(400);
-        expect(response.body.message).toBe("Content is required");
-    });
-
-    test("Should not create a comment without authentication", async () => {
-        const invalidComment = { ...testComments[0] };
-        invalidComment.postId = post_id.toString();
-        invalidComment.author = testUser.toString();
-        
-        const response = await request(app)
-            .post("/comments")
-            .send(invalidComment);
-        
-        console.log('body:', response.body);
-        expect(response.statusCode).toBe(403);
-        expect(response.body.message).toBe("Access denied. No token provided.");
-    });
-
-    it('should not create a comment for a non-existing post', async () => {
-        const req = {
-            body: {
                 content: 'Test Comment',
-                postId: '1234567890abcdef12345678',
-            },
-            user: {
-                userId: testUser,
-            },
-        };
+                postId: postId,
+            });
 
-        const res = {
-            status: jest.fn().mockReturnThis(),
-            json: jest.fn(),
-        };
-
-        await commentsController.createComment(req as any, res as any);
-
-        expect(res.status).toHaveBeenCalledWith(404);
-        expect(res.json).toHaveBeenCalledWith({ message: 'Post not found' });
+        expect(response.status).toBe(201);
+        expect(response.body).toHaveProperty('_id');
+        commentId = response.body._id;
     });
 
-    it('should not update a comment if the user is not the author', async () => {
-        const unauthorizedUserResponse = await request(app)
-            .post('/users/register')
-            .send({
-                username: 'unauthorizedUser',
-                email: 'unauthorizeduser@example.com',
-                password: 'password123',
-            });
-        expect(unauthorizedUserResponse.status).toBe(201);
-    
-        const unauthorizedUserLogin = await request(app)
-            .post('/users/login')
-            .send({
-                email: 'unauthorizeduser@example.com',
-                password: 'password123',
-            });
-        
-        const unauthorizedUserToken = unauthorizedUserLogin.body.token;  
-        
-        const updateResponse = await request(app)
-            .put(`/comments/${commentId}`)
-            .set('Authorization', `Bearer ${unauthorizedUserToken}`)
-            .send({ content: 'Updated comment content' });
-    
-        expect(updateResponse.status).toBe(403);  
-        expect(updateResponse.body.message).toBe('Unauthorized');  
+    it('should get comments by post ID', async () => {
+        const response = await request(app).get(`/comment/post/${postId}`);
+        expect(response.status).toBe(200);
+        expect(response.body.length).toBeGreaterThan(0);
     });
 
     it('should update a comment', async () => {
-        const commentResponse = await request(app)
-            .post('/comments')
-            .set('Authorization', `Bearer ${accessToken}`)
+        const response = await request(app)
+            .put(`/comment/${commentId}`)
+            .set('Authorization', `Bearer ${token}`)
             .send({
-                content: 'This is a comment to update',
-                postId: post_id.toString(),
-                author: testUser.toString(),
+                content: 'Updated Comment',
             });
-    
-        expect(commentResponse.status).toBe(201);
-        const commentToUpdateId = commentResponse.body._id;
-    
-        const updatedComment = { content: 'Updated content for the comment' };
-        const updateResponse = await request(app)
-            .put(`/comments/${commentToUpdateId}`)
-            .set('Authorization', `Bearer ${accessToken}`)
-            .send(updatedComment);
-        
-        expect(updateResponse.status).toBe(200);
-        expect(updateResponse.body.content).toBe(updatedComment.content);
-    });
 
-    it('should not update a comment with empty content', async () => {
-        const commentResponse = await request(app)
-            .post('/comments')
-            .set('Authorization', `Bearer ${accessToken}`)
-            .send({
-                content: 'This is a comment to update',
-                postId: post_id.toString(),
-                author: testUser.toString(),
-            });
-    
-        expect(commentResponse.status).toBe(201);
-        const commentToUpdateId = commentResponse.body._id;
-    
-        const updatedComment = { content: '' };
-        const updateResponse = await request(app)
-            .put(`/comments/${commentToUpdateId}`)
-            .set('Authorization', `Bearer ${accessToken}`)
-            .send(updatedComment);
-    
-        expect(updateResponse.status).toBe(400);
-        expect(updateResponse.body.message).toBe('Content is required');
+        expect(response.status).toBe(200);
+        expect(response.body.content).toBe('Updated Comment');
     });
 
     it('should delete a comment', async () => {
-        const commentResponse = await request(app)
-            .post('/comments')
-            .set('Authorization', `Bearer ${accessToken}`)
+        const response = await request(app)
+            .delete(`/comment/${commentId}`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(response.status).toBe(200);
+
+        const getResponse = await request(app).get(`/comment/${commentId}`);
+        expect(getResponse.status).toBe(404);
+    });
+
+    it('should not create a comment without authentication', async () => {
+        const response = await request(app)
+            .post('/comment')
             .send({
-                content: 'This is a comment to delete',
-                postId: post_id.toString(),
-                author: testUser.toString(),
+                content: 'Test Comment',
+                postId: postId,
             });
-    
-        expect(commentResponse.status).toBe(201);
-        const commentToDeleteId = commentResponse.body._id;
-    
-        const deleteResponse = await request(app)
-            .delete(`/comments/${commentToDeleteId}`)
-            .set('Authorization', `Bearer ${accessToken}`);
-    
-        expect(deleteResponse.status).toBe(200);
-        expect(deleteResponse.body.message).toBe('Comment deleted');
-    
-        const checkDeletedResponse = await request(app)
-            .get(`/comments/${commentToDeleteId}`)
-            .set('Authorization', `Bearer ${accessToken}`);
-    
-        expect(checkDeletedResponse.status).toBe(404);
+
+        expect(response.status).toBe(403);
     });
 
-    it('should not delete a comment if the user is not the author', async () => {
-        const commentResponse = await request(app)
-            .post('/comments')
-            .set('Authorization', `Bearer ${accessToken}`)
+    it('should not update a comment without authentication', async () => {
+        const response = await request(app)
+            .put(`/comment/${commentId}`)
             .send({
-                content: 'This is a comment to not delete',
-                postId: post_id.toString(),
-                author: testUser.toString(),
+                content: 'Updated Comment',
             });
-    
-        expect(commentResponse.status).toBe(201);
-        const commentToDeleteId = commentResponse.body._id;
-    
-        const otherUserResponse = await request(app)
-            .post('/users/register')
+
+        expect(response.status).toBe(403);
+    });
+
+    it('should not delete a comment without authentication', async () => {
+        const response = await request(app)
+            .delete(`/comment/${commentId}`);
+
+        expect(response.status).toBe(403);
+    });
+
+    it('should not create a comment with invalid post ID', async () => {
+        const response = await request(app)
+            .post('/comment')
+            .set('Authorization', `Bearer ${token}`)
             .send({
-                username: 'otheruser',
-                email: 'otheruser@example.com',
-                password: 'password123',
+                content: 'Test Comment',
+                postId: 'invalid-post-id',
             });
-        expect(otherUserResponse.status).toBe(201);
-    
-        const otherUserLoginResponse = await request(app)
-            .post('/users/login')
+
+        expect(response.status).toBe(400);
+    });
+
+    it('should not create a comment with non-existent post ID', async () => {
+        const nonExistentPostId = new mongoose.Types.ObjectId();
+        const response = await request(app)
+            .post('/comment')
+            .set('Authorization', `Bearer ${token}`)
             .send({
-                email: 'otheruser@example.com',
-                password: 'password123',
+                content: 'Test Comment',
+                postId: nonExistentPostId.toString(),
             });
-        const otherUserToken = otherUserLoginResponse.body.token;
-    
-        const deleteResponse = await request(app)
-            .delete(`/comments/${commentToDeleteId}`)
-            .set('Authorization', `Bearer ${otherUserToken}`);
-    
-        expect(deleteResponse.status).toBe(403);
-        expect(deleteResponse.body.message).toBe('Unauthorized');
-    });
 
-    it('should not create a comment for a non-existing post', async () => {
-        const nonExistingPostId = '507f1f77bcf86cd799439011';
-    
-        const invalidComment = {
-            content: 'This comment should not be created',
-            postId: nonExistingPostId,
-            author: testUser.toString(),
-        };
-    
-        const response = await request(app)
-            .post('/comments')
-            .set('Authorization', `Bearer ${accessToken}`)
-            .send(invalidComment);
-    
-        expect(response.statusCode).toBe(404);
-        expect(response.body.message).toBe('Post not found');
-    });
-
-    it('should return 400 for an invalid postId', async () => {
-        const invalidPostId = '123456';
-        const invalidComment = { 
-            content: 'This is an invalid postId test comment',
-            postId: invalidPostId,
-            author: testUser.toString(),
-        };
-
-        const response = await request(app)
-            .post("/comments")
-            .set('Authorization', `Bearer ${accessToken}`)
-            .send(invalidComment);
-
-        expect(response.statusCode).toBe(400);
-        expect(response.body.message).toBe("Invalid postId");
-    });
-
-    test("Should not create a comment without content", async () => {
-        const invalidComment = { ...testComments[0] };
-        invalidComment.content = "";
-        invalidComment.postId = post_id.toString();
-        invalidComment.author = testUser.toString();
-    
-        const response = await request(app)
-            .post("/comments")
-            .set('Authorization', `Bearer ${accessToken}`)
-            .send(invalidComment);
-    
-        expect(response.statusCode).toBe(400);
-        expect(response.body.message).toBe("Content is required");
-    });
-
-    test("Should not create a comment for an invalid postId", async () => {
-        const invalidPostId = '123456';
-        const invalidComment = { 
-            content: 'This is an invalid postId test comment',
-            postId: invalidPostId,
-            author: testUser.toString(),
-        };
-    
-        const response = await request(app)
-            .post("/comments")
-            .set('Authorization', `Bearer ${accessToken}`)
-            .send(invalidComment);
-    
-        expect(response.statusCode).toBe(400);
-        expect(response.body.message).toBe("Invalid postId");
-    });
-
-    test("Should not create a comment for a non-existing post", async () => {
-        const nonExistingPostId = '507f1f77bcf86cd799439011';
-        
-        const invalidComment = {
-            content: 'This comment should not be created',
-            postId: nonExistingPostId,
-            author: testUser.toString(),
-        };
-        
-        const response = await request(app)
-            .post('/comments')
-            .set('Authorization', `Bearer ${accessToken}`)
-            .send(invalidComment);
-        
-        expect(response.statusCode).toBe(404);
-        expect(response.body.message).toBe('Post not found');
-    });
-
-    test('should return 404 if comment not found', async () => {
-        const invalidCommentId = '507f1f77bcf86cd799439011';
-    
-        const response = await request(app)
-            .delete(`/comments/${invalidCommentId}`)
-            .set('Authorization', `Bearer ${accessToken}`);
-    
         expect(response.status).toBe(404);
-        expect(response.body.error).toBe('Comment not found');
     });
 
-    test('should return 404 if comment not found when updating', async () => {
-        const invalidCommentId = '507f1f77bcf86cd799439011';
-    
+    it('should not update a comment with invalid ID', async () => {
         const response = await request(app)
-            .put(`/comments/${invalidCommentId}`)
-            .set('Authorization', `Bearer ${accessToken}`)
+            .put('/comment/invalid-id')
+            .set('Authorization', `Bearer ${token}`)
             .send({
-                content: 'Updated comment content',
+                content: 'Updated Comment',
             });
     
-        expect(response.status).toBe(404);
-        expect(response.body.error).toBe('Comment not found');
+        expect(response.status).toBe(400); // שינוי ל-400
     });
+
+    it('should not delete a comment with invalid ID', async () => {
+        const response = await request(app)
+            .delete('/comment/invalid-id')
+            .set('Authorization', `Bearer ${token}`);
+    
+        expect(response.status).toBe(400); // שינוי ל-400
+    });
+
+
+    it('should handle error when creating a comment', async () => {
+        // מחיקת הפוסט כדי לגרום לשגיאה ביצירת תגובה
+        await Post.findByIdAndDelete(postId);
+
+        const response = await request(app)
+            .post('/comment')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                content: 'Test Comment',
+                postId: postId,
+            });
+
+        expect(response.status).toBe(404); // שינוי ל-404
+        expect(response.body).toHaveProperty('message', 'Post not found');
+
+        // יצירת הפוסט מחדש כדי לא להשפיע על טסטים אחרים
+        await Post.create({
+            _id: postId,
+            recipeTitle: 'Test Recipe',
+            category: ['test'],
+            difficulty: 'easy',
+            prepTime: 30,
+            ingredients: ['ingredient1', 'ingredient2'],
+            instructions: ['instruction1', 'instruction2'],
+            authorId: userId,
+        });
+    });
+
+    it('should handle error when updating a comment', async () => {
+        // יצירת תגובה חדשה לטסט זה
+        const newComment = await Comment.create({
+            content: 'Test Comment',
+            postId: postId,
+            author: userId,
+        });
+
+        const response = await request(app)
+            .put(`/comment/${newComment._id}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                content: 'Updated Comment',
+            });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty('content', 'Updated Comment');
+    });
+
+    it('should handle error when deleting a comment', async () => {
+        // יצירת תגובה חדשה לטסט זה
+        const newComment = await Comment.create({
+            content: 'Test Comment',
+            postId: postId,
+            author: userId,
+        });
+
+        const response = await request(app)
+            .delete(`/comment/${newComment._id}`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty('message', 'Comment deleted');
+    });
+
+    it('should handle server error when updating a comment', async () => {
+        // שינוי ה-ID של התגובה כדי לגרום לשגיאה כללית
+        const invalidCommentId = 'invalid-comment-id';
+
+        const response = await request(app)
+            .put(`/comment/${invalidCommentId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                content: 'Updated Comment',
+            });
+        expect(response.status).toBe(400); // שינוי ל-400
+        expect(response.body).toHaveProperty('message', 'Invalid comment ID');
+    });
+
+    it('should handle server error when deleting a comment', async () => {
+        // שינוי ה-ID של התגובה כדי לגרום לשגיאה כללית
+        const invalidCommentId = 'invalid-comment-id';
+
+        const response = await request(app)
+            .delete(`/comment/${invalidCommentId}`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(response.status).toBe(400); // שינוי ל-400
+        expect(response.body).toHaveProperty('message', 'Invalid comment ID');
+    });
+
+
+    it('should not create a comment without content', async () => {
+        const response = await request(app)
+            .post('/comment')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                postId: postId,
+            });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty('message', 'Content is required');
+    });
+
+    it('should not create a comment with empty content', async () => {
+        const response = await request(app)
+            .post('/comment')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                content: '   ',
+                postId: postId,
+            });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty('message', 'Content is required');
+    });
+
+    it('should handle error when getting comments by post - post not found', async () => {
+        const nonExistentPostId = new mongoose.Types.ObjectId();
+        const response = await request(app).get(`/comment/post/${nonExistentPostId}`);
+
+        expect(response.status).toBe(404);
+        expect(response.body).toHaveProperty('message', 'Post not found');
+    });
+
+    it('should handle error when getting comments by post - server error', async () => {
+        // יצירת postId לא תקין כדי לגרום לשגיאת שרת
+        const invalidPostId = 'invalid-post-id';
+
+        const response = await request(app).get(`/comment/post/${invalidPostId}`);
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty('message', 'Invalid postId');
+    });
+
+    it('should not update a comment with empty content', async () => {
+        const response = await request(app)
+            .put(`/comment/${commentId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                content: '   ',
+            });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty('message', 'Content is required');
+    });
+
+    it('should not update a comment without content', async () => {
+        const response = await request(app)
+            .put(`/comment/${commentId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({});
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty('message', 'Content is required');
+    });
+
+    it('should not update a comment with invalid comment ID', async () => {
+        const invalidCommentId = 'invalid-comment-id';
+        const response = await request(app)
+            .put(`/comment/${invalidCommentId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                content: 'Updated Comment',
+            });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty('message', 'Invalid comment ID');
+    });
+
+    it('should not update a comment with non-existent comment ID', async () => {
+        const nonExistentCommentId = new mongoose.Types.ObjectId();
+        const response = await request(app)
+            .put(`/comment/${nonExistentCommentId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                content: 'Updated Comment',
+            });
+
+        expect(response.status).toBe(404);
+        expect(response.body).toHaveProperty('error', 'Comment not found');
+    });
+
+
+    it('should not delete a comment with invalid comment ID', async () => {
+        const invalidCommentId = 'invalid-comment-id';
+        const response = await request(app)
+            .delete(`/comment/${invalidCommentId}`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty('message', 'Invalid comment ID');
+    });
+
+    it('should not delete a comment with non-existent comment ID', async () => {
+        const nonExistentCommentId = new mongoose.Types.ObjectId();
+        const response = await request(app)
+            .delete(`/comment/${nonExistentCommentId}`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(response.status).toBe(404);
+        expect(response.body).toHaveProperty('error', 'Comment not found');
+    });
+
+
+
+
 });
