@@ -32,10 +32,9 @@ const fileFilter = (req: any, file: any, cb: any) => {
 };
   
 const upload = multer({ storage, fileFilter });
-  
+
 router.put("/:id", upload.single("profileImage"), usersController.updateUser);
 router.get("/:id", usersController.getUserDetails);
-
 
 
 
@@ -55,7 +54,6 @@ router.get("/:id", usersController.getUserDetails);
  *       scheme: bearer
  *       bearerFormat: JWT
  */
-
 
 /**
  * @swagger
@@ -109,6 +107,7 @@ router.get("/:id", usersController.getUserDetails);
  */
 router.post('/register', usersController.registerUser);
 
+
 /**
  * @swagger
  * /auth/login:
@@ -126,24 +125,25 @@ router.post('/register', usersController.registerUser);
  *         description: Successful login
  *         content:
  *           application/json:
- *               schema:
- *                   type: object
- *                   properties:
- *                       accessToken:
- *                           type: string
- *                           description: JWT access token
- *                       refreshToken:
- *                           type: string
- *                           description: JWT refresh token
- *                       _id:
- *                           type: string
- *                           description: User ID
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                   description: JWT access token
+ *                 refreshToken:
+ *                   type: string
+ *                   description: JWT refresh token
+ *                 _id:
+ *                   type: string
+ *                   description: User ID
  *       400:
  *         description: Invalid email or password
  *       500:
  *         description: Internal server error
  */
 router.post('/login', usersController.loginUser);
+
 
 /**
  * @swagger
@@ -153,7 +153,7 @@ router.post('/login', usersController.loginUser);
  *     tags: [Auth]
  *     description: Need to provide the refresh token in the auth header
  *     security:
- *       - bearerAuth: []  # וודא שאתה מבצע אימות בטוקן כאן
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Logout completed successfully
@@ -163,6 +163,7 @@ router.post('/login', usersController.loginUser);
  *         description: Internal server error
  */
 router.post('/logout', usersController.logoutUser);
+
 
 /**
  * @swagger
@@ -216,7 +217,27 @@ router.post('/refresh', usersController.refreshToken);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/User'
+ *             type: object
+ *             required:
+ *               - username
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 description: The username of the user
+ *               email:
+ *                 type: string
+ *                 description: The email of the user
+ *               password:
+ *                 type: string
+ *                 description: The password of the user
+ *               imgUrl:
+ *                 type: string
+ *                 description: The URL of the user's profile image (optional)
+ *             example:
+ *               username: 'bob'
+ *               email: 'bob@gmail.com'
+ *               password: 'newpassword'
+ *               imgUrl: 'https://example.com/new-image.png'
  *     responses:
  *       200:
  *         description: Updated user details
@@ -230,6 +251,7 @@ router.post('/refresh', usersController.refreshToken);
  *         description: User not found
  */
 router.put('/:id', usersController.updateUser);
+
 
 /**
  * @swagger
@@ -276,18 +298,18 @@ router.delete('/:id', usersController.deleteUser);
  *         description: Successful login
  *         content:
  *           application/json:
- *               schema:
- *                   type: object
- *                   properties:
- *                       accessToken:
- *                           type: string
- *                           description: JWT access token
- *                       refreshToken:
- *                           type: string
- *                           description: JWT refresh token
- *                       userId:
- *                           type: string
- *                           description: User ID
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                   description: JWT access token
+ *                 refreshToken:
+ *                   type: string
+ *                   description: JWT refresh token
+ *                 userId:
+ *                   type: string
+ *                   description: User ID
  *       400:
  *         description: Invalid Google token
  *       500:
@@ -299,19 +321,82 @@ router.post('/google-login', usersController.googleLogin);
 
 
 
+
+
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   put:
+ *     summary: Update user details
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: User ID
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
+ *     responses:
+ *       200:
+ *         description: Updated user details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Invalid user data
+ *       404:
+ *         description: User not found
+ */
 router.put("/:id", upload.single("profileImage"), usersController.updateUser);
 
-
-
-router.put('/:id', upload.single('profileImage'), usersController.updateUser);
-
-
+/**
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     summary: Get user details by ID
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: User ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User details fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                   description: User ID
+ *                 username:
+ *                   type: string
+ *                   description: User's username
+ *                 email:
+ *                   type: string
+ *                   description: User's email
+ *                 imgUrl:
+ *                   type: string
+ *                   description: URL of the user's profile image
+ *       404:
+ *         description: User not found
+ */
 router.get('/:id', usersController.getUserDetails); // Get user details by ID
-
-router.put('/:id', upload.single("profileImage"), usersController.updateUser);
-
-
-
+ 
 
 
 export default router;

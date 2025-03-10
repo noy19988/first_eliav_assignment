@@ -44,7 +44,7 @@ const router: Router = express.Router();
 
 /**
  * @swagger
- * /comments:
+ * /comment:
  *   post:
  *     summary: Add a new comment
  *     tags: [Comments]
@@ -70,7 +70,7 @@ router.post('/', authMiddleware, createComment);
 
 /**
  * @swagger
- * /comments/post/{postId}:
+ * /comment/post/{postId}:
  *   get:
  *     summary: Get comments by post ID
  *     tags: [Comments]
@@ -97,7 +97,7 @@ router.get('/post/:postId', getCommentsByPost);
 
 /**
  * @swagger
- * /comments/{id}:
+ * /comment/{id}:
  *   put:
  *     summary: Update a comment by ID
  *     tags: [Comments]
@@ -126,7 +126,7 @@ router.put('/:id', authMiddleware, updateComment);
 
 /**
  * @swagger
- * /comments/{id}:
+ * /comment/{id}:
  *   delete:
  *     summary: Delete a comment by ID
  *     tags: [Comments]
@@ -146,5 +146,6 @@ router.put('/:id', authMiddleware, updateComment);
  *         description: Comment not found
  */
 router.delete('/:id', authMiddleware, deleteComment);
+
 
 export default router;

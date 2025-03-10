@@ -6,9 +6,7 @@ import { getPostNutrition } from "../controllers/generateNutritionController"; /
 
 import {
     getAllPosts,
-    // getPostById,
     updatePost,
-    // getPostsBySender,
     deletePost,
     createPost,
     savePost,
@@ -31,7 +29,8 @@ const upload = multer({ storage });
 
 // ✅ יצירת פוסט (כולל העלאת תמונה)
 router.post("/", authMiddleware, upload.single("image"), createPost);
-  
+
+
 /**
  * @swagger
  * components:
@@ -39,28 +38,82 @@ router.post("/", authMiddleware, upload.single("image"), createPost);
  *     Post:
  *       type: object
  *       required:
- *         - title
- *         - content
- *         - author
+ *         - recipeTitle
+ *         - category
+ *         - difficulty
+ *         - prepTime
+ *         - ingredients
+ *         - instructions
+ *         - authorId
  *       properties:
- *         title:
+ *         recipeTitle:
  *           type: string
- *           description: The title of the post
- *         content:
+ *           description: The title of the recipe post
+ *         category:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Categories for the post
+ *         imageUrl:
  *           type: string
- *           description: The content of the post
- *         author:
+ *           description: URL of the recipe image
+ *         difficulty:
  *           type: string
- *           description: The ID of the user who created the post
+ *           enum: ["easy", "medium", "hard"]
+ *           description: Difficulty level of the recipe
+ *         prepTime:
+ *           type: number
+ *           description: Preparation time in minutes
+ *         ingredients:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: List of ingredients
+ *         instructions:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Cooking instructions
+ *         authorId:
+ *           type: string
+ *           description: ID of the user who created the post
+ *         likes:
+ *           type: number
+ *           description: Number of likes the post has
+ *         likedBy:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: List of user IDs who liked the post
+ *         comments:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: List of comment IDs related to the post
+ *         savedBy:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: List of user IDs who saved the post
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Date when the post was created
  *       example:
- *         title: 'Sample Post'
- *         content: 'This is a sample content for the post.'
- *         author: '60b8d58f7c6b2d001c8b2d22'
+ *         recipeTitle: 'Spaghetti Bolognese'
+ *         category: ['Italian', 'Pasta']
+ *         imageUrl: 'http://example.com/image.jpg'
+ *         difficulty: 'medium'
+ *         prepTime: 45
+ *         ingredients: ['spaghetti', 'ground beef', 'tomato sauce']
+ *         instructions: ['Boil spaghetti', 'Cook beef', 'Mix together']
+ *         authorId: '60b8d58f7c6b2d001c8b2d22'
+ *         likes: 0
+ *         likedBy: []
+ *         comments: []
+ *         savedBy: []
+ *         createdAt: '2025-03-10T12:00:00Z'
  */
-
-
-
-
 
 /**
  * @swagger
@@ -69,44 +122,30 @@ router.post("/", authMiddleware, upload.single("image"), createPost);
  *   description: The Posts API
  */
 
-// /**
-//  * @swagger
-//  * /posts:
-//  *   get:
-//  *     summary: Get all posts
-//  *     description: Retrieve all posts
-//  *     tags: [Posts]
-//  *     responses:
-//  *       200:
-//  *         description: Posts retrieved successfully
-//  *       500:
-//  *         description: Internal server error
-//  */
-// router.get("/", getAllPosts);
-
-// /**
-//  * @swagger
-//  * /posts/{id}:
-//  *   get:
-//  *     summary: Get a post by ID
-//  *     description: Retrieve a post by its ID
-//  *     tags: [Posts]
-//  *     parameters:
-//  *       - in: path
-//  *         name: id
-//  *         schema:
-//  *           type: string
-//  *         required: true
-//  *         description: The ID of the post to retrieve
-//  *     responses:
-//  *       200:
-//  *         description: Post retrieved successfully
-//  *       404:
-//  *         description: Post not found
-//  *       500:
-//  *         description: Internal server error
-//  */
-// router.get('/:id', getPostById);
+/**
+ * @swagger
+ * /posts:
+ *   post:
+ *     summary: Create a new post
+ *     tags: [Posts]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Post'
+ *     responses:
+ *       201:
+ *         description: The post was successfully created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ */
+router.post('/', authMiddleware, upload.single("image"), createPost);
+  
 
 /**
  * @swagger
@@ -128,12 +167,48 @@ router.post("/", authMiddleware, upload.single("image"), createPost);
  */
 router.post('/', authMiddleware, createPost);
 
+
+
+/**
+ * @swagger
+ * /posts/{id}:
+ *   put:
+ *     summary: Update an existing post
+ *     description: Update a post by its ID
+ *     tags: [Posts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the post to update
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Post'
+ *     responses:
+ *       200:
+ *         description: The post was successfully updated
+ *       404:
+ *         description: Post not found
+ *       500:
+ *         description: Internal server error
+ */
+router.put("/:id", authMiddleware, upload.single("image"), updatePost);
+
+
 /**
  * @swagger
  * /posts/{id}:
  *   delete:
- *     summary: Delete a post
+ *     summary: Delete a post by its ID
  *     description: Delete a post by its ID
+ *     tags: [Posts]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -141,6 +216,8 @@ router.post('/', authMiddleware, createPost);
  *         name: id
  *         required: true
  *         description: The ID of the post to delete
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Post deleted successfully
@@ -151,70 +228,93 @@ router.post('/', authMiddleware, createPost);
  */
 router.delete("/:id", authMiddleware, deletePost);
 
-// /**
-//  * @swagger
-//  * /posts/sender/{sender}:
-//  *   get:
-//  *     summary: Get posts by sender
-//  *     tags: [Posts]
-//  *     parameters:
-//  *       - in: path
-//  *         name: sender
-//  *         schema:
-//  *           type: string
-//  *         required: true
-//  *         description: The ID of the sender to filter posts
-//  *     responses:
-//  *       200:
-//  *         description: Posts retrieved successfully
-//  *       404:
-//  *         description: Posts not found
-//  *       500:
-//  *         description: Internal server error
-//  */
-// router.get('/sender/:sender', getPostsBySender);
-
-
 /**
  * @swagger
- * /posts/{id}:
+ * /posts/{id}/save:
  *   put:
- *     summary: Update a post
- *     description: Update a post by its ID
+ *     summary: Save a post
+ *     description: Save or unsave a post by its ID
  *     tags: [Posts]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
+ *         required: true
+ *         description: The ID of the post to save or unsave
  *         schema:
  *           type: string
- *         required: true
- *         description: The ID of the post to update
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Post'
  *     responses:
  *       200:
- *         description: Post updated successfully
+ *         description: Post saved or unsaved successfully
  *       404:
  *         description: Post not found
  *       500:
  *         description: Internal server error
  */
-router.put("/:id", authMiddleware, upload.single("image"), updatePost);
-
-
-router.get("/user/:userId", getPostsByUser);
-
-
-router.get("/", getAllPosts);
-
 router.put("/:id/save", authMiddleware, savePost);
 
-router.get("/:id/nutrition", getPostNutrition); // ✅ נתיב חדש לשליפת ערכים תזונתיים
+/**
+ * @swagger
+ * /posts/user/{userId}:
+ *   get:
+ *     summary: Get all posts by a user
+ *     description: Retrieve all posts created by a user
+ *     tags: [Posts]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         description: The ID of the user to get posts for
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Posts retrieved successfully
+ *       404:
+ *         description: User not found or no posts available
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/user/:userId", getPostsByUser);
 
+/**
+ * @swagger
+ * /posts:
+ *   get:
+ *     summary: Get all posts
+ *     description: Retrieve all posts
+ *     tags: [Posts]
+ *     responses:
+ *       200:
+ *         description: Posts retrieved successfully
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/", getAllPosts);
 
+/**
+ * @swagger
+ * /posts/{id}/nutrition:
+ *   get:
+ *     summary: Get nutritional information for a post
+ *     description: Retrieve nutritional values for a recipe post
+ *     tags: [Posts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the post to retrieve nutritional information
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Nutritional information retrieved successfully
+ *       404:
+ *         description: Post not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/:id/nutrition", getPostNutrition);
 
 export default router;
