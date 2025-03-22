@@ -5,6 +5,7 @@ import authMiddleware from '../middleware/authMiddleware';
 import { getPostNutrition } from "../controllers/generateNutritionController"; // 📌 ייבוא הפונקציה
 
 import {
+    searchAndFilterPosts,
     getAllPosts,
     updatePost,
     deletePost,
@@ -283,8 +284,28 @@ router.get("/user/:userId", getPostsByUser);
  * /posts:
  *   get:
  *     summary: Get all posts
- *     description: Retrieve all posts
+ *     description: Retrieve all posts with optional filters for search, difficulty, and category
  *     tags: [Posts]
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         description: Keyword to search within the post's title, ingredients, or instructions
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: difficulty
+ *         description: Difficulty level of the recipe (easy, medium, hard)
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [easy, medium, hard]
+ *       - in: query
+ *         name: category
+ *         description: Comma-separated list of categories to filter the posts by
+ *         required: false
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Posts retrieved successfully
@@ -316,5 +337,10 @@ router.get("/", getAllPosts);
  *         description: Internal server error
  */
 router.get("/:id/nutrition", getPostNutrition);
+
+
+
+
+router.get("/search", searchAndFilterPosts);
 
 export default router;

@@ -156,6 +156,7 @@ export const getAllPosts = async (req: Request, res: Response) => {
 };
 
 
+
 export const deletePost = async (req: Request, res: Response): Promise<void> => {
     const postId = req.params.id;
 
@@ -254,5 +255,50 @@ export const savePost = async (req: Request, res: Response): Promise<void> => {
         res.status(500).json({ message: "Error fetching user posts", error });
     }
 };
+
+
+
+export const searchAndFilterPosts = async (req: Request, res: Response) => {
+    try {
+        const { search, difficulty, category } = req.query;
+
+        let query: any = {};
+
+        if (search) {
+            const searchRegex = new RegExp(search as string, 'i');
+            query.$or = [
+                { recipeTitle: { $regex: searchRegex } },
+                { ingredients: { $regex: searchRegex } },
+                { instructions: { $regex: searchRegex } }
+            ];
+        }
+
+        if (difficulty && typeof difficulty === 'string') {
+            const normalizedDifficulty = difficulty.toLowerCase().trim();
+            if (['easy', 'medium', 'hard'].includes(normalizedDifficulty)) {
+                query.difficulty = normalizedDifficulty;
+            } else {
+                console.warn(`⚠️ ערך רמת קושי לא חוקי: ${difficulty}`);
+            }
+        }
+
+        if (category) {
+            const categories = (category as string).split(',').map(cat => cat.trim());
+            query.category = { $in: categories };
+        }
+
+        const posts = await Post.find(query)
+            .populate("authorId", "username imgUrl")
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(posts);
+    } catch (error) {
+        console.error("❌ שגיאה בחיפוש וסינון פוסטים:", error);
+        res.status(500).json({ message: "שגיאה בחיפוש וסינון פוסטים", error });
+    }
+};
+  
+
+
 
 
