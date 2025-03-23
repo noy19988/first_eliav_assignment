@@ -5,3 +5,4 @@ gen-lang-client-*.json
 # ⛔ תיקיות build ואחרות שלא צריך לעקוב אחריהן
 node_modules/
 
+clean-fix/
