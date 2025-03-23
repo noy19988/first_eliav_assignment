@@ -5,15 +5,24 @@ import cors from 'cors';
 import swaggerJsDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import multer from 'multer';
-import fileRoutes from "./routes/fileRoutes"; 
-import recipeRoutes from "./routes/recipeRoutes";
+import fs from 'fs';
+import https from 'https';
+import http from 'http';
 
+// dotenv
 dotenv.config();
 
+// בדיקה שחובה
 if (!process.env.MONGO_URI) {
     throw new Error("❌ MONGO_URI is not defined in your .env file");
 }
 
+// משתני סביבה עם ברירת מחדל
+const domainBase = process.env.DOMAIN_BASE ?? 'http://localhost:3000';
+const port = process.env.PORT || 3000;
+const httpsPort = process.env.HTTPS_PORT || 443;
+
+// יצירת אפליקציית אקספרס
 const app: Application = express();
 
 // Middleware
@@ -22,15 +31,16 @@ app.use(express.urlencoded({ extended: true }));
 
 // CORS
 app.use(cors({
-    origin: process.env.DOMAIN_BASE,
+    origin: domainBase,
     methods: "GET,POST,PUT,DELETE,OPTIONS",
     allowedHeaders: "Content-Type,Authorization",
     credentials: true
 }));
 
-// Static file serving
+// קבצים סטטיים
 const upload = multer({ dest: "public/uploads/" });
 app.use("/uploads", express.static("public/uploads"));
+app.use("/public", express.static("public"));
 
 // Swagger config
 const swaggerOptions = {
@@ -46,7 +56,14 @@ const swaggerOptions = {
             },
         },
         servers: [
-            { url: process.env.DOMAIN_BASE, description: 'Remote server' }
+            {
+                url: domainBase,
+                description: 'Remote HTTP server',
+            },
+            {
+                url: domainBase.replace(/^http:/, 'https:'),
+                description: 'Remote HTTPS server',
+            },
         ],
     },
     apis: ['./src/routes/*.ts'],
@@ -55,7 +72,9 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/rest-api', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-// Routes
+// נתיבים
+import fileRoutes from './routes/fileRoutes';
+import recipeRoutes from './routes/recipeRoutes';
 import usersRoutes from './routes/usersRoutes';
 import postsRoutes from './routes/postsRoutes';
 import commentsRoutes from './routes/commentsRoutes';
@@ -66,13 +85,12 @@ app.use('/auth', usersRoutes);
 app.use('/users', usersRoutes);
 app.use('/posts', postsRoutes);
 app.use('/comment', commentsRoutes);
-app.use("/public", express.static("public"));
 
 app.get("/", (req: Request, res: Response) => {
-    res.send("<h1>דנה אלעזרה הנסיכה רצח,ברוך הבא לאתר שלי!</h1><p>האתר עובד כמו שצריך 😃</p>");
+    res.send("<h1>דנה אלעזרה הנסיכה רצח, ברוך הבא לאתר שלי!</h1><p>האתר עובד כמו שצריך 😃</p>");
 });
 
-// MongoDB Connection
+// חיבור למסד הנתונים
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('✅ Connected to MongoDB'))
     .catch((err) => {
@@ -80,13 +98,34 @@ mongoose.connect(process.env.MONGO_URI)
         process.exit(1);
     });
 
-const initApp = (): Application => app;
-export default initApp;
+// הפעלת השרת
+const startServer = () => {
+    if (process.env.NODE_ENV !== 'production') {
+        http.createServer(app).listen(port, () => {
+            console.log(`🚀 Development server running on http://localhost:${port}`);
+        });
+    } else {
+        const keyPath = './client-key.pem';
+        const certPath = './client-cert.pem';
 
-if (require.main === module) {
-    const port = process.env.PORT;
-    app.listen(port, () => {
-        console.log(`🚀 Server running on http://${process.env.DOMAIN_BASE}`);
-        console.log(`📄 Swagger docs: http://${process.env.DOMAIN_BASE}/rest-api`);
-    });
-}
+        const httpsExists = fs.existsSync(keyPath) && fs.existsSync(certPath);
+
+        if (httpsExists) {
+            const options = {
+                key: fs.readFileSync(keyPath),
+                cert: fs.readFileSync(certPath),
+            };
+
+            https.createServer(options, app).listen(httpsPort, () => {
+                console.log(`🔐 Production server running on https://${domainBase.replace(/^http:/, 'https:')}`);
+            });
+        } else {
+            console.warn('⚠️ HTTPS certificates not found. Falling back to HTTP.');
+            http.createServer(app).listen(port, () => {
+                console.log(`🚀 Production server running on http://${domainBase}`);
+            });
+        }
+    }
+};
+
+startServer();
