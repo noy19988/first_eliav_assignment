@@ -24,15 +24,43 @@ export const searchRecipes = async (req: Request, res: Response, next: NextFunct
  */
 export const getRecipeDetails = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const recipeId = parseInt(req.params.id, 10);
-        if (isNaN(recipeId)) {
-            res.status(400).json({ error: "Recipe ID must be a valid number." });
-            return;
-        }
-
-        const recipeDetails = await fetchRecipeDetailsFromAPI(recipeId);
-        res.json({ recipeDetails });
+      const recipeId = parseInt(req.params.id, 10);
+      if (isNaN(recipeId)) {
+        res.status(400).json({ error: "Recipe ID must be a valid number." });
+        return;
+      }
+  
+      const recipeDetails = await fetchRecipeDetailsFromAPI(recipeId);
+  
+      // הדפסת כל פרמטרי המתכון
+      console.log("Fetched recipe details:");
+      console.log("Title:", recipeDetails.title);
+      console.log("Image:", recipeDetails.image);
+      console.log("Ready in minutes:", recipeDetails.readyInMinutes);
+      console.log("Servings:", recipeDetails.servings);
+      console.log("Summary:", recipeDetails.summary);
+      console.log("Instructions:", recipeDetails.instructions);
+  
+      // הדפסת רכיבים
+      console.log("Ingredients:");
+      recipeDetails.extendedIngredients.forEach(ingredient => {
+        console.log(`- ${ingredient.name}: ${ingredient.amount} ${ingredient.unit}`);
+      });
+  
+      // הדפסת תזונה אם קיימת
+      if (recipeDetails.nutrition) {
+        console.log("Nutrition:");
+        recipeDetails.nutrition.nutrients.forEach(nutrient => {
+          console.log(`${nutrient.name}: ${nutrient.amount} ${nutrient.unit}`);
+        });
+      } else {
+        console.log("No nutrition information available.");
+      }
+  
+      // שליחת המידע חזרה ל-Frontend
+      res.json({ recipeDetails });
     } catch (error) {
-        next(error);
+      next(error);
     }
-};
+  };
+  
