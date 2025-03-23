@@ -5,6 +5,7 @@
   "scripts": {
     "start": "tsc && node ./dist/server.js",
     "dev": "nodemon ./src/server.ts",
+    "test:dist": "jest --config jest.dist.config.js",
     "test": "tsc && jest --detectOpenHandles --forceExit --runInBand --verbose",
     "testAuth": "tsc && jest --detectOpenHandles --forceExit tests/users_and_auth.test.ts --runInBand",
     "testPost": "tsc && jest --detectOpenHandles --forceExit tests/posts.test.ts --runInBand",

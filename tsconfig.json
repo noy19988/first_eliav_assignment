@@ -1,15 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es2017",
-    "module": "commonjs",
-    "rootDir": ".", 
-    "outDir": "./dist",
-    "strict": true,
+    "module": "CommonJS",  // או "ESNext" אם אתה עובד עם ESM
+    "target": "ES6",
+    "outDir": "./dist",    // תיקיית הפלט
+    "rootDir": "./",       // הגדר את rootDir כך שיכלול את כל הפרויקט
     "esModuleInterop": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
+    "strict": true,
+    "resolveJsonModule": true
   },
-  "include": ["src/**/*", "tests/**/*"], 
+  "include": ["src/**/*", "tests/**/*"],  // כל קבצי ה-TS בתיקיות src ו-tests
   "exclude": ["node_modules"]
 }

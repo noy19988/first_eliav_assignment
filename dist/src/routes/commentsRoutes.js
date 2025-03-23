@@ -40,7 +40,7 @@ const router = express_1.default.Router();
  */
 /**
  * @swagger
- * /comments:
+ * /comment:
  *   post:
  *     summary: Add a new comment
  *     tags: [Comments]
@@ -65,7 +65,7 @@ const router = express_1.default.Router();
 router.post('/', authMiddleware_1.default, commentsController_1.createComment);
 /**
  * @swagger
- * /comments/post/{postId}:
+ * /comment/post/{postId}:
  *   get:
  *     summary: Get comments by post ID
  *     tags: [Comments]
@@ -91,7 +91,7 @@ router.post('/', authMiddleware_1.default, commentsController_1.createComment);
 router.get('/post/:postId', commentsController_1.getCommentsByPost);
 /**
  * @swagger
- * /comments/{id}:
+ * /comment/{id}:
  *   put:
  *     summary: Update a comment by ID
  *     tags: [Comments]
@@ -119,7 +119,7 @@ router.get('/post/:postId', commentsController_1.getCommentsByPost);
 router.put('/:id', authMiddleware_1.default, commentsController_1.updateComment);
 /**
  * @swagger
- * /comments/{id}:
+ * /comment/{id}:
  *   delete:
  *     summary: Delete a comment by ID
  *     tags: [Comments]

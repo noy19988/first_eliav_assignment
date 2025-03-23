@@ -113,18 +113,18 @@ router.post('/register', usersController_1.default.registerUser);
  *         description: Successful login
  *         content:
  *           application/json:
- *               schema:
- *                   type: object
- *                   properties:
- *                       accessToken:
- *                           type: string
- *                           description: JWT access token
- *                       refreshToken:
- *                           type: string
- *                           description: JWT refresh token
- *                       _id:
- *                           type: string
- *                           description: User ID
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                   description: JWT access token
+ *                 refreshToken:
+ *                   type: string
+ *                   description: JWT refresh token
+ *                 _id:
+ *                   type: string
+ *                   description: User ID
  *       400:
  *         description: Invalid email or password
  *       500:
@@ -139,7 +139,7 @@ router.post('/login', usersController_1.default.loginUser);
  *     tags: [Auth]
  *     description: Need to provide the refresh token in the auth header
  *     security:
- *       - bearerAuth: []  # וודא שאתה מבצע אימות בטוקן כאן
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Logout completed successfully
@@ -200,7 +200,27 @@ router.post('/refresh', usersController_1.default.refreshToken);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/User'
+ *             type: object
+ *             required:
+ *               - username
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 description: The username of the user
+ *               email:
+ *                 type: string
+ *                 description: The email of the user
+ *               password:
+ *                 type: string
+ *                 description: The password of the user
+ *               imgUrl:
+ *                 type: string
+ *                 description: The URL of the user's profile image (optional)
+ *             example:
+ *               username: 'bob'
+ *               email: 'bob@gmail.com'
+ *               password: 'newpassword'
+ *               imgUrl: 'https://example.com/new-image.png'
  *     responses:
  *       200:
  *         description: Updated user details
@@ -257,26 +277,93 @@ router.delete('/:id', usersController_1.default.deleteUser);
  *         description: Successful login
  *         content:
  *           application/json:
- *               schema:
- *                   type: object
- *                   properties:
- *                       accessToken:
- *                           type: string
- *                           description: JWT access token
- *                       refreshToken:
- *                           type: string
- *                           description: JWT refresh token
- *                       userId:
- *                           type: string
- *                           description: User ID
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                   description: JWT access token
+ *                 refreshToken:
+ *                   type: string
+ *                   description: JWT refresh token
+ *                 userId:
+ *                   type: string
+ *                   description: User ID
  *       400:
  *         description: Invalid Google token
  *       500:
  *         description: Internal server error
  */
 router.post('/google-login', usersController_1.default.googleLogin);
+/**
+ * @swagger
+ * /users/{id}:
+ *   put:
+ *     summary: Update user details
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: User ID
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
+ *     responses:
+ *       200:
+ *         description: Updated user details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Invalid user data
+ *       404:
+ *         description: User not found
+ */
 router.put("/:id", upload.single("profileImage"), usersController_1.default.updateUser);
-router.put('/:id', upload.single('profileImage'), usersController_1.default.updateUser);
+/**
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     summary: Get user details by ID
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: User ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User details fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                   description: User ID
+ *                 username:
+ *                   type: string
+ *                   description: User's username
+ *                 email:
+ *                   type: string
+ *                   description: User's email
+ *                 imgUrl:
+ *                   type: string
+ *                   description: URL of the user's profile image
+ *       404:
+ *         description: User not found
+ */
 router.get('/:id', usersController_1.default.getUserDetails); // Get user details by ID
-router.put('/:id', upload.single("profileImage"), usersController_1.default.updateUser);
 exports.default = router;
