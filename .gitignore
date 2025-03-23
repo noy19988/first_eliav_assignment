@@ -1,2 +1,7 @@
-# 🛑 התעלמות מתיקיית node_modules כדי למנוע העלאת קבצים מיותרים
+# ❌ חסימת קובצי קרדנציאל של Google Cloud
+gen-lang-client-*.json
+
+
+# ⛔ תיקיות build ואחרות שלא צריך לעקוב אחריהן
 node_modules/
+
