@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "prod": "cp .env_prod .env && tsc  -p tsconfig_prod.json && node ./dist/src/server.js",
+    "prod": "cp .env_prod .env && tsc -p tsconfig_prod.json && pm2 restart ecosystem.config.js --env production",
     "start": "tsc && node ./dist/server.js",
     "dev": "nodemon ./src/server.ts",
     "test:dist": "jest --config jest.dist.config.js",

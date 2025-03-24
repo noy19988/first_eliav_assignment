@@ -6,3 +6,8 @@ gen-lang-client-*.json
 node_modules/
 
 clean-fix/
+
+
+
+echo ".env" >> .gitignore
+echo ".env_prod" >> .gitignore

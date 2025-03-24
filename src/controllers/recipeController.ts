@@ -20,7 +20,7 @@ export const searchRecipes = async (req: Request, res: Response, next: NextFunct
 };
 
 /**
- * 📌 שליפת כל הפרטים של מתכון לפי ID
+ * 📌 שליפת כל הפרטים של מתכון לפי IDn
  */
 export const getRecipeDetails = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {

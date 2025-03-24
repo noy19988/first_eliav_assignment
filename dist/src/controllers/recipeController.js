@@ -30,7 +30,7 @@ const searchRecipes = (req, res, next) => __awaiter(void 0, void 0, void 0, func
 });
 exports.searchRecipes = searchRecipes;
 /**
- * 📌 שליפת כל הפרטים של מתכון לפי ID
+ * 📌 שליפת כל הפרטים של מתכון לפי IDn
  */
 const getRecipeDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {

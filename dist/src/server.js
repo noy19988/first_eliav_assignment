@@ -14,17 +14,17 @@ const multer_1 = __importDefault(require("multer"));
 const fs_1 = __importDefault(require("fs"));
 const https_1 = __importDefault(require("https"));
 const http_1 = __importDefault(require("http"));
-// dotenv
+const path_1 = __importDefault(require("path"));
+// Load environment variables
 dotenv_1.default.config();
-// בדיקה שחובה
+// Check required env vars
 if (!process.env.MONGO_URI) {
     throw new Error("❌ MONGO_URI is not defined in your .env file");
 }
-// משתני סביבה עם ברירת מחדל
-const domainBase = (_a = process.env.DOMAIN_BASE) !== null && _a !== void 0 ? _a : 'http://localhost:3000';
+const domainBase = (_a = process.env.DOMAIN_BASE) !== null && _a !== void 0 ? _a : 'http://node115.cs.colman.ac.il';
 const port = process.env.PORT || 3000;
 const httpsPort = process.env.HTTPS_PORT || 443;
-// יצירת אפליקציית אקספרס
+const publicPath = path_1.default.join(process.cwd(), 'public');
 const app = (0, express_1.default)();
 // Middleware
 app.use(express_1.default.json());
@@ -36,11 +36,13 @@ app.use((0, cors_1.default)({
     allowedHeaders: "Content-Type,Authorization",
     credentials: true
 }));
-// קבצים סטטיים
+// Multer setup (for uploads)
 const upload = (0, multer_1.default)({ dest: "public/uploads/" });
+// Static files
 app.use("/uploads", express_1.default.static("public/uploads"));
-app.use("/public", express_1.default.static("public"));
-// Swagger config
+app.use(express_1.default.static(path_1.default.join(__dirname, '../public'))); // ✅ הוספנו את זה - הגשת ה-front מהשורש
+app.use(express_1.default.static(publicPath));
+// Swagger
 const swaggerOptions = {
     swaggerDefinition: {
         openapi: '3.0.0',
@@ -48,27 +50,17 @@ const swaggerOptions = {
             title: 'REST API Documentation',
             version: '1.0.0',
             description: 'Documentation for REST API',
-            contact: {
-                name: 'Your Name',
-                email: 'your-email@example.com',
-            },
         },
         servers: [
-            {
-                url: domainBase,
-                description: 'Remote HTTP server',
-            },
-            {
-                url: domainBase.replace(/^http:/, 'https:'),
-                description: 'Remote HTTPS server',
-            },
+            { url: domainBase, description: 'Remote HTTP server' },
+            { url: domainBase.replace(/^http:/, 'https:'), description: 'Remote HTTPS server' },
         ],
     },
     apis: ['./src/routes/*.ts'],
 };
 const swaggerDocs = (0, swagger_jsdoc_1.default)(swaggerOptions);
 app.use('/rest-api', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerDocs));
-// נתיבים
+// Routes
 const fileRoutes_1 = __importDefault(require("./routes/fileRoutes"));
 const recipeRoutes_1 = __importDefault(require("./routes/recipeRoutes"));
 const usersRoutes_1 = __importDefault(require("./routes/usersRoutes"));
@@ -80,21 +72,21 @@ app.use('/auth', usersRoutes_1.default);
 app.use('/users', usersRoutes_1.default);
 app.use('/posts', postsRoutes_1.default);
 app.use('/comment', commentsRoutes_1.default);
-app.get("/", (req, res) => {
-    res.send("<h1>דנה אלעזרה הנסיכה רצח, ברוך הבא לאתר שלי!</h1><p>האתר עובד כמו שצריך 😃</p>");
+app.get('/*', (req, res) => {
+    res.sendFile(path_1.default.join(process.cwd(), 'public', 'index.html'));
 });
-// חיבור למסד הנתונים
+// MongoDB Connection
 mongoose_1.default.connect(process.env.MONGO_URI)
     .then(() => console.log('✅ Connected to MongoDB'))
     .catch((err) => {
     console.error('❌ Error connecting to MongoDB:', err.message);
     process.exit(1);
 });
-// הפעלת השרת
+// Start Server
 const startServer = () => {
     if (process.env.NODE_ENV !== 'production') {
         http_1.default.createServer(app).listen(port, () => {
-            console.log(`🚀 Development server running on http://localhost:${port}`);
+            console.log(`🚀 Dev server running on http://localhost:${port}`);
         });
     }
     else {
@@ -107,7 +99,7 @@ const startServer = () => {
                 cert: fs_1.default.readFileSync(certPath),
             };
             https_1.default.createServer(options, app).listen(httpsPort, () => {
-                console.log(`🔐 Production server running on https://${domainBase.replace(/^http:/, 'https:')}`);
+                console.log(`🔐 Production server running on ${domainBase}`);
             });
         }
         else {
