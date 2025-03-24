@@ -110,5 +110,8 @@ const startServer = () => {
         }
     }
 };
-startServer();
+exports.default = app; // מייצא את ה-app עצמו (לקונסטרקט טסטים)
+if (require.main === module) {
+    startServer(); // רק אם מפעילים את הקובץ ישירות - מריץ את השרת
+}
 //# sourceMappingURL=server.js.map
