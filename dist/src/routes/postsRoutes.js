@@ -316,3 +316,4 @@ router.get("/", postsController_1.getAllPosts);
 router.get("/:id/nutrition", generateNutritionController_1.getPostNutrition);
 router.get("/search", postsController_1.searchAndFilterPosts);
 exports.default = router;
+//# sourceMappingURL=postsRoutes.js.map

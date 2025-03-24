@@ -529,3 +529,4 @@ describe('Posts API Tests', () => {
         expect(getResponse.status).toBe(404);
     }));
 });
+//# sourceMappingURL=posts.test.js.map

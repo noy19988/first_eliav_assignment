@@ -16,3 +16,4 @@ router.get("/search", (0, express_async_handler_1.default)(recipeController_1.se
  */
 router.get("/:id", (0, express_async_handler_1.default)(recipeController_1.getRecipeDetails));
 exports.default = router;
+//# sourceMappingURL=recipeRoutes.js.map

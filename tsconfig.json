@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",  // או "ESNext" אם אתה עובד עם ESM
-    "target": "ES6",
-    "outDir": "./dist",    // תיקיית הפלט
-    "rootDir": "./",       // הגדר את rootDir כך שיכלול את כל הפרויקט
+    "module": "commonjs",
     "esModuleInterop": true,
+    "target": "es6",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist",
     "strict": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*", "tests/**/*"],  // כל קבצי ה-TS בתיקיות src ו-tests
-  "exclude": ["node_modules"]
+  "lib": ["es2015"]
 }

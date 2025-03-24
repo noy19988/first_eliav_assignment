@@ -1,12 +1,15 @@
-/** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
-export default {
-    preset: "ts-jest",
-    testEnvironment: "node",
-    verbose: true, 
-    collectCoverage: true,
-    coverageDirectory: "coverage",
-    coverageReporters: ["text", "lcov"],
+import type { Config } from 'jest';
 
-    roots: ["<rootDir>/tests/"], 
-    testMatch: ["**/*.test.ts"], 
+const config: Config = {
+    preset: 'ts-jest',
+    testEnvironment: 'node',
+    verbose: true,
+    collectCoverage: true,
+    coverageDirectory: 'coverage',
+    coverageReporters: ['text', 'lcov'],
+    roots: ['<rootDir>/tests'],
+    testMatch: ['**/*.test.ts'],
+    moduleFileExtensions: ['ts', 'js'],
 };
+
+export default config;

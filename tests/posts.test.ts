@@ -1,6 +1,6 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
-import initApp from '../src/server';
+import app from '../src/server';
 import Post from '../src/models/post';
 import User from '../src/models/user';
 import jwt from 'jsonwebtoken';
@@ -10,14 +10,13 @@ import fs from 'fs';
 
 dotenv.config();
 
-const app = initApp();
 let token: string;
 let userId: string;
 let postId: string;
 let testUser: any;
 
 beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/rest-api');
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/local');
 
     // יצירת משתמש בדיקה
     testUser = await User.create({

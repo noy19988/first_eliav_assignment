@@ -43,3 +43,4 @@ const getPostNutrition = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.getPostNutrition = getPostNutrition;
+//# sourceMappingURL=generateNutritionController.js.map

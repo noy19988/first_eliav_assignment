@@ -33,3 +33,4 @@ router.post("/upload", upload.single("file"), (req, res) => {
     res.status(200).json({ imageUrl });
 });
 exports.default = router;
+//# sourceMappingURL=fileRoutes.js.map

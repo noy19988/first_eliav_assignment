@@ -140,3 +140,4 @@ router.put('/:id', authMiddleware_1.default, commentsController_1.updateComment)
  */
 router.delete('/:id', authMiddleware_1.default, commentsController_1.deleteComment);
 exports.default = router;
+//# sourceMappingURL=commentsRoutes.js.map

@@ -367,3 +367,4 @@ router.put("/:id", upload.single("profileImage"), usersController_1.default.upda
  */
 router.get('/:id', usersController_1.default.getUserDetails); // Get user details by ID
 exports.default = router;
+//# sourceMappingURL=usersRoutes.js.map

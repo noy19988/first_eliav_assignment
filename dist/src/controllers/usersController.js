@@ -280,3 +280,4 @@ exports.default = {
     deleteUser: exports.deleteUser,
     googleLogin: exports.googleLogin,
 };
+//# sourceMappingURL=usersController.js.map

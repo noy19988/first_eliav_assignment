@@ -127,3 +127,4 @@ const deleteComment = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.deleteComment = deleteComment;
+//# sourceMappingURL=commentsController.js.map

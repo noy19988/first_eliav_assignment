@@ -27,3 +27,4 @@ const setupSwagger = (app) => {
     app.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerDocs));
 };
 exports.setupSwagger = setupSwagger;
+//# sourceMappingURL=swagger.js.map

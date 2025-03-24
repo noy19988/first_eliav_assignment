@@ -280,3 +280,4 @@ const searchAndFilterPosts = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.searchAndFilterPosts = searchAndFilterPosts;
+//# sourceMappingURL=postsController.js.map
