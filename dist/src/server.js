@@ -2,7 +2,6 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
 const express_1 = __importDefault(require("express"));
@@ -21,7 +20,10 @@ dotenv_1.default.config();
 if (!process.env.MONGO_URI) {
     throw new Error("❌ MONGO_URI is not defined in your .env file");
 }
-const domainBase = (_a = process.env.DOMAIN_BASE) !== null && _a !== void 0 ? _a : 'http://node115.cs.colman.ac.il';
+const domainBase = process.env.DOMAIN_BASE;
+if (!domainBase) {
+    throw new Error("❌ DOMAIN_BASE is not defined in your .env file");
+}
 const port = process.env.PORT || 3000;
 const httpsPort = process.env.HTTPS_PORT || 443;
 const publicPath = path_1.default.join(process.cwd(), 'public');

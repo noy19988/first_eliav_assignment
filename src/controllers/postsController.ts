@@ -17,6 +17,11 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
             return;
         }
 
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
+
         const user = await User.findById(userId);
         if (!user) {
             res.status(404).json({ message: "User not found" });
@@ -51,8 +56,15 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
         res.status(201).json({ message: "Post created successfully", post: newPost });
     } catch (error) {
         console.error("❌ שגיאה ביצירת פוסט:", error);
-        res.status(500).json({ message: "Error creating post", error });
-    }
+      
+        if (error instanceof Error && error.name === 'ValidationError') {
+          res.status(400).json({ message: 'Validation error', error });
+        } else {
+          res.status(500).json({ message: "Error creating post", error });
+        }
+      }
+      
+      
 };
 
 export const updatePost = async (req: Request, res: Response): Promise<void> => {
@@ -197,7 +209,8 @@ export const savePost = async (req: Request, res: Response): Promise<void> => {
         const postId = req.params.id;
         const userId = req.user?.userId;
 
-        if (!userId) {
+        
+        if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
             res.status(401).json({ message: "Unauthorized" });
             return;
         }
@@ -297,7 +310,22 @@ export const searchAndFilterPosts = async (req: Request, res: Response) => {
         res.status(500).json({ message: "שגיאה בחיפוש וסינון פוסטים", error });
     }
 };
-  
+
+
+
+export const getPostById = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) {
+            res.status(404).json({ message: "Post not found" });
+            return;
+        }
+        res.status(200).json(post);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching post", error });
+    }
+};
+
 
 
 

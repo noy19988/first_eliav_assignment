@@ -274,12 +274,14 @@ describe('Posts API Tests', () => {
             .field('instructions', JSON.stringify(['instruction1', 'instruction2']))
             .attach('image', path.join(__dirname, 'test-image.png'));
 
-        expect(response.status).toBe(500);
+        expect(response.status).toBe(400);
+
     });
 
     it('should handle user not found during post creation', async () => {
-        const invalidToken = jwt.sign({ userId: 'invalidUserId' }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
-    
+        const nonExistingUserId = new mongoose.Types.ObjectId().toString(); // ID חוקי שלא קיים ב-DB
+        const invalidToken = jwt.sign({ userId: nonExistingUserId }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+            
         const response = await request(app)
             .post('/posts')
             .set('Authorization', `Bearer ${invalidToken}`)

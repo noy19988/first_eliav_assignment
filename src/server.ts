@@ -18,8 +18,10 @@ if (!process.env.MONGO_URI) {
   throw new Error("❌ MONGO_URI is not defined in your .env file");
 }
 
-const domainBase = process.env.DOMAIN_BASE ?? 'http://node115.cs.colman.ac.il';
-const port = process.env.PORT || 3000;
+const domainBase = process.env.DOMAIN_BASE;
+if (!domainBase) {
+  throw new Error("❌ DOMAIN_BASE is not defined in your .env file");
+}const port = process.env.PORT || 3000;
 const httpsPort = process.env.HTTPS_PORT || 443;
 const publicPath = path.join(process.cwd(), 'public');
 

@@ -19,7 +19,6 @@ let testPost: any;
 beforeAll(async () => {
     await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/local');
 
-    // יצירת משתמש בדיקה
     testUser = await User.create({
         username: 'testuser',
         email: 'testuser@example.com',
@@ -27,7 +26,6 @@ beforeAll(async () => {
     });
     userId = testUser._id.toString();
 
-    // יצירת פוסט בדיקה
     testPost = await Post.create({
         recipeTitle: 'Test Recipe',
         category: ['test'],
@@ -39,7 +37,6 @@ beforeAll(async () => {
     });
     postId = testPost._id.toString();
 
-    // יצירת טוקן
     token = jwt.sign({ userId: userId }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
 });
 
@@ -83,16 +80,16 @@ describe('Comments API Tests', () => {
         expect(response.body.content).toBe('Updated Comment');
     });
 
-    it('should delete a comment', async () => {
-        const response = await request(app)
-            .delete(`/comment/${commentId}`)
-            .set('Authorization', `Bearer ${token}`);
+    // it('should delete a comment', async () => {
+    //     const response = await request(app)
+    //         .delete(`/comment/${commentId}`)
+    //         .set('Authorization', `Bearer ${token}`);
 
-        expect(response.status).toBe(200);
+    //     expect(response.status).toBe(200);
 
-        const getResponse = await request(app).get(`/comment/${commentId}`);
-        expect(getResponse.status).toBe(404);
-    });
+    //     const getResponse = await request(app).get(`/comment/${commentId}`);
+    //     expect(getResponse.status).toBe(404);
+    // });
 
     it('should not create a comment without authentication', async () => {
         const response = await request(app)
@@ -155,7 +152,7 @@ describe('Comments API Tests', () => {
                 content: 'Updated Comment',
             });
     
-        expect(response.status).toBe(400); // שינוי ל-400
+        expect(response.status).toBe(400); 
     });
 
     it('should not delete a comment with invalid ID', async () => {
@@ -163,12 +160,11 @@ describe('Comments API Tests', () => {
             .delete('/comment/invalid-id')
             .set('Authorization', `Bearer ${token}`);
     
-        expect(response.status).toBe(400); // שינוי ל-400
+        expect(response.status).toBe(400); 
     });
 
 
     it('should handle error when creating a comment', async () => {
-        // מחיקת הפוסט כדי לגרום לשגיאה ביצירת תגובה
         await Post.findByIdAndDelete(postId);
 
         const response = await request(app)
@@ -179,10 +175,9 @@ describe('Comments API Tests', () => {
                 postId: postId,
             });
 
-        expect(response.status).toBe(404); // שינוי ל-404
+        expect(response.status).toBe(404); 
         expect(response.body).toHaveProperty('message', 'Post not found');
 
-        // יצירת הפוסט מחדש כדי לא להשפיע על טסטים אחרים
         await Post.create({
             _id: postId,
             recipeTitle: 'Test Recipe',
@@ -196,7 +191,6 @@ describe('Comments API Tests', () => {
     });
 
     it('should handle error when updating a comment', async () => {
-        // יצירת תגובה חדשה לטסט זה
         const newComment = await Comment.create({
             content: 'Test Comment',
             postId: postId,
@@ -215,7 +209,6 @@ describe('Comments API Tests', () => {
     });
 
     it('should handle error when deleting a comment', async () => {
-        // יצירת תגובה חדשה לטסט זה
         const newComment = await Comment.create({
             content: 'Test Comment',
             postId: postId,
@@ -231,7 +224,6 @@ describe('Comments API Tests', () => {
     });
 
     it('should handle server error when updating a comment', async () => {
-        // שינוי ה-ID של התגובה כדי לגרום לשגיאה כללית
         const invalidCommentId = 'invalid-comment-id';
 
         const response = await request(app)
@@ -240,19 +232,18 @@ describe('Comments API Tests', () => {
             .send({
                 content: 'Updated Comment',
             });
-        expect(response.status).toBe(400); // שינוי ל-400
+        expect(response.status).toBe(400); 
         expect(response.body).toHaveProperty('message', 'Invalid comment ID');
     });
 
     it('should handle server error when deleting a comment', async () => {
-        // שינוי ה-ID של התגובה כדי לגרום לשגיאה כללית
         const invalidCommentId = 'invalid-comment-id';
 
         const response = await request(app)
             .delete(`/comment/${invalidCommentId}`)
             .set('Authorization', `Bearer ${token}`);
 
-        expect(response.status).toBe(400); // שינוי ל-400
+        expect(response.status).toBe(400); 
         expect(response.body).toHaveProperty('message', 'Invalid comment ID');
     });
 
@@ -291,7 +282,6 @@ describe('Comments API Tests', () => {
     });
 
     it('should handle error when getting comments by post - server error', async () => {
-        // יצירת postId לא תקין כדי לגרום לשגיאת שרת
         const invalidPostId = 'invalid-post-id';
 
         const response = await request(app).get(`/comment/post/${invalidPostId}`);

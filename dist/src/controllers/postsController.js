@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.searchAndFilterPosts = exports.getPostsByUser = exports.savePost = exports.deletePost = exports.getAllPosts = exports.updatePost = exports.createPost = void 0;
+exports.getPostById = exports.searchAndFilterPosts = exports.getPostsByUser = exports.savePost = exports.deletePost = exports.getAllPosts = exports.updatePost = exports.createPost = void 0;
 const post_1 = __importDefault(require("../models/post"));
 const user_1 = __importDefault(require("../models/user"));
 const mongoose_1 = __importDefault(require("mongoose"));
@@ -24,6 +24,10 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         const { recipeTitle, category, difficulty, prepTime, ingredients, instructions } = req.body;
         const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
         if (!userId) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
+        if (!mongoose_1.default.Types.ObjectId.isValid(userId)) {
             res.status(401).json({ message: "Unauthorized" });
             return;
         }
@@ -58,7 +62,12 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
     catch (error) {
         console.error("❌ שגיאה ביצירת פוסט:", error);
-        res.status(500).json({ message: "Error creating post", error });
+        if (error instanceof Error && error.name === 'ValidationError') {
+            res.status(400).json({ message: 'Validation error', error });
+        }
+        else {
+            res.status(500).json({ message: "Error creating post", error });
+        }
     }
 });
 exports.createPost = createPost;
@@ -189,7 +198,7 @@ const savePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const postId = req.params.id;
         const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
-        if (!userId) {
+        if (!userId || !mongoose_1.default.Types.ObjectId.isValid(userId)) {
             res.status(401).json({ message: "Unauthorized" });
             return;
         }
@@ -280,4 +289,18 @@ const searchAndFilterPosts = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.searchAndFilterPosts = searchAndFilterPosts;
+const getPostById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const post = yield post_1.default.findById(req.params.id);
+        if (!post) {
+            res.status(404).json({ message: "Post not found" });
+            return;
+        }
+        res.status(200).json(post);
+    }
+    catch (error) {
+        res.status(500).json({ message: "Error fetching post", error });
+    }
+});
+exports.getPostById = getPostById;
 //# sourceMappingURL=postsController.js.map

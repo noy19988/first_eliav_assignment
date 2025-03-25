@@ -7,8 +7,9 @@ const express_1 = __importDefault(require("express"));
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const authMiddleware_1 = __importDefault(require("../middleware/authMiddleware"));
-const generateNutritionController_1 = require("../controllers/generateNutritionController"); // 📌 ייבוא הפונקציה
 const postsController_1 = require("../controllers/postsController");
+const generateNutritionController_1 = require("../controllers/generateNutritionController"); // 📌 ייבוא הפונקציה
+const postsController_2 = require("../controllers/postsController");
 const router = express_1.default.Router();
 // 📌 הגדרת אחסון קבצים
 const storage = multer_1.default.diskStorage({
@@ -21,7 +22,7 @@ const storage = multer_1.default.diskStorage({
 });
 const upload = (0, multer_1.default)({ storage });
 // ✅ יצירת פוסט (כולל העלאת תמונה)
-router.post("/", authMiddleware_1.default, upload.single("image"), postsController_1.createPost);
+router.post("/", authMiddleware_1.default, upload.single("image"), postsController_2.createPost);
 /**
  * @swagger
  * components:
@@ -133,7 +134,7 @@ router.post("/", authMiddleware_1.default, upload.single("image"), postsControll
  *             schema:
  *               $ref: '#/components/schemas/Post'
  */
-router.post('/', authMiddleware_1.default, upload.single("image"), postsController_1.createPost);
+router.post('/', authMiddleware_1.default, upload.single("image"), postsController_2.createPost);
 /**
  * @swagger
  * /posts:
@@ -152,7 +153,7 @@ router.post('/', authMiddleware_1.default, upload.single("image"), postsControll
  *       201:
  *         description: The post was successfully created
  */
-router.post('/', authMiddleware_1.default, postsController_1.createPost);
+router.post('/', authMiddleware_1.default, postsController_2.createPost);
 /**
  * @swagger
  * /posts/{id}:
@@ -183,7 +184,7 @@ router.post('/', authMiddleware_1.default, postsController_1.createPost);
  *       500:
  *         description: Internal server error
  */
-router.put("/:id", authMiddleware_1.default, upload.single("image"), postsController_1.updatePost);
+router.put("/:id", authMiddleware_1.default, upload.single("image"), postsController_2.updatePost);
 /**
  * @swagger
  * /posts/{id}:
@@ -208,7 +209,7 @@ router.put("/:id", authMiddleware_1.default, upload.single("image"), postsContro
  *       500:
  *         description: Internal server error
  */
-router.delete("/:id", authMiddleware_1.default, postsController_1.deletePost);
+router.delete("/:id", authMiddleware_1.default, postsController_2.deletePost);
 /**
  * @swagger
  * /posts/{id}/save:
@@ -233,7 +234,7 @@ router.delete("/:id", authMiddleware_1.default, postsController_1.deletePost);
  *       500:
  *         description: Internal server error
  */
-router.put("/:id/save", authMiddleware_1.default, postsController_1.savePost);
+router.put("/:id/save", authMiddleware_1.default, postsController_2.savePost);
 /**
  * @swagger
  * /posts/user/{userId}:
@@ -256,7 +257,7 @@ router.put("/:id/save", authMiddleware_1.default, postsController_1.savePost);
  *       500:
  *         description: Internal server error
  */
-router.get("/user/:userId", postsController_1.getPostsByUser);
+router.get("/user/:userId", postsController_2.getPostsByUser);
 /**
  * @swagger
  * /posts:
@@ -290,7 +291,7 @@ router.get("/user/:userId", postsController_1.getPostsByUser);
  *       500:
  *         description: Internal server error
  */
-router.get("/", postsController_1.getAllPosts);
+router.get("/", postsController_2.getAllPosts);
 /**
  * @swagger
  * /posts/{id}/nutrition:
@@ -314,6 +315,7 @@ router.get("/", postsController_1.getAllPosts);
  *         description: Internal server error
  */
 router.get("/:id/nutrition", generateNutritionController_1.getPostNutrition);
-router.get("/search", postsController_1.searchAndFilterPosts);
+router.get("/search", postsController_2.searchAndFilterPosts);
+router.get('/:id', postsController_1.getPostById);
 exports.default = router;
 //# sourceMappingURL=postsRoutes.js.map

@@ -2,6 +2,7 @@ import express, { Router } from 'express';
 import multer from "multer";
 import path from "path";
 import authMiddleware from '../middleware/authMiddleware';
+import { getPostById } from '../controllers/postsController';
 import { getPostNutrition } from "../controllers/generateNutritionController"; // 📌 ייבוא הפונקציה
 
 import {
@@ -343,4 +344,6 @@ router.get("/:id/nutrition", getPostNutrition);
 
 router.get("/search", searchAndFilterPosts);
 
+
+router.get('/:id', getPostById);
 export default router;
