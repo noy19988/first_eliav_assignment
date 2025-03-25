@@ -7,13 +7,7 @@ const express_1 = __importDefault(require("express"));
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const recipeController_1 = require("../controllers/recipeController");
 const router = express_1.default.Router();
-/**
- * 📌 חיפוש מתכונים לפי שם
- */
 router.get("/search", (0, express_async_handler_1.default)(recipeController_1.searchRecipes));
-/**
- * 📌 שליפת כל הפרטים של מתכון לפי ID
- */
 router.get("/:id", (0, express_async_handler_1.default)(recipeController_1.getRecipeDetails));
 exports.default = router;
 //# sourceMappingURL=recipeRoutes.js.map

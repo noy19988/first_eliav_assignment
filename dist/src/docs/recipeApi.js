@@ -18,9 +18,6 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const API_KEY = process.env.SPOONACULAR_API_KEY;
 const BASE_URL = "https://api.spoonacular.com/recipes";
-/**
- * 📌 מבצע חיפוש מתכונים לפי שם
- */
 const fetchRecipesFromAPI = (query) => __awaiter(void 0, void 0, void 0, function* () {
     if (!API_KEY) {
         throw new Error("Spoonacular API Key is missing. Please set SPOONACULAR_API_KEY in your .env file.");
@@ -40,14 +37,11 @@ const fetchRecipesFromAPI = (query) => __awaiter(void 0, void 0, void 0, functio
         }));
     }
     catch (error) {
-        console.error("❌ Error fetching recipes from Spoonacular API:", error);
+        console.error("Error fetching recipes from Spoonacular API:", error);
         throw new Error("Failed to fetch recipes.");
     }
 });
 exports.fetchRecipesFromAPI = fetchRecipesFromAPI;
-/**
- * 📌 מביא את כל הפרטים של מתכון לפי `id`
- */
 const fetchRecipeDetailsFromAPI = (recipeId) => __awaiter(void 0, void 0, void 0, function* () {
     if (!API_KEY) {
         throw new Error("Spoonacular API Key is missing. Please set SPOONACULAR_API_KEY in your .env file.");
@@ -74,7 +68,7 @@ const fetchRecipeDetailsFromAPI = (recipeId) => __awaiter(void 0, void 0, void 0
         };
     }
     catch (error) {
-        console.error("❌ Error fetching recipe details from Spoonacular API:", error);
+        console.error("Error fetching recipe details from Spoonacular API:", error);
         throw new Error("Failed to fetch recipe details.");
     }
 });

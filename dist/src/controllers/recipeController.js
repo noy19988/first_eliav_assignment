@@ -11,9 +11,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRecipeDetails = exports.searchRecipes = void 0;
 const recipeApi_1 = require("../docs/recipeApi");
-/**
- * 📌 חיפוש מתכונים לפי שם
- */
 const searchRecipes = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const query = req.query.query;
@@ -29,9 +26,6 @@ const searchRecipes = (req, res, next) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.searchRecipes = searchRecipes;
-/**
- * 📌 שליפת כל הפרטים של מתכון לפי IDn
- */
 const getRecipeDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const recipeId = parseInt(req.params.id, 10);
@@ -40,7 +34,6 @@ const getRecipeDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, f
             return;
         }
         const recipeDetails = yield (0, recipeApi_1.fetchRecipeDetailsFromAPI)(recipeId);
-        // הדפסת כל פרמטרי המתכון
         console.log("Fetched recipe details:");
         console.log("Title:", recipeDetails.title);
         console.log("Image:", recipeDetails.image);
@@ -48,12 +41,10 @@ const getRecipeDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, f
         console.log("Servings:", recipeDetails.servings);
         console.log("Summary:", recipeDetails.summary);
         console.log("Instructions:", recipeDetails.instructions);
-        // הדפסת רכיבים
         console.log("Ingredients:");
         recipeDetails.extendedIngredients.forEach(ingredient => {
             console.log(`- ${ingredient.name}: ${ingredient.amount} ${ingredient.unit}`);
         });
-        // הדפסת תזונה אם קיימת
         if (recipeDetails.nutrition) {
             console.log("Nutrition:");
             recipeDetails.nutrition.nutrients.forEach(nutrient => {
@@ -63,7 +54,6 @@ const getRecipeDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, f
         else {
             console.log("No nutrition information available.");
         }
-        // שליחת המידע חזרה ל-Frontend
         res.json({ recipeDetails });
     }
     catch (error) {

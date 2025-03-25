@@ -8,7 +8,6 @@ const usersController_1 = __importDefault(require("../controllers/usersControlle
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const router = express_1.default.Router();
-// ✅ 1. הגדרת `multer` לאחסון תמונות בתיקיית `public/uploads`
 const storage = multer_1.default.diskStorage({
     destination: function (req, file, cb) {
         const uploadPath = path_1.default.join(process.cwd(), "public/uploads/");
@@ -19,7 +18,6 @@ const storage = multer_1.default.diskStorage({
         cb(null, uniqueSuffix);
     },
 });
-// ✅ 2. פילטר לבדוק שהקובץ הוא תמונה
 const fileFilter = (req, file, cb) => {
     if (file.mimetype.startsWith("image/")) {
         cb(null, true);

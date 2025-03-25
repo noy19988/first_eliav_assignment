@@ -7,28 +7,26 @@ const express_1 = __importDefault(require("express"));
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const router = express_1.default.Router();
-// 📌 הגדרת אחסון תמונות
 const storage = multer_1.default.diskStorage({
     destination: (req, file, cb) => {
-        console.log("📁 שמירת קובץ בתיקיית uploads...");
-        cb(null, "public/uploads/"); // תיקיית העלאה
+        console.log("Saving a file in the uploads folder...");
+        cb(null, "public/uploads/");
     },
     filename: (req, file, cb) => {
         const uniqueFilename = Date.now() + path_1.default.extname(file.originalname);
-        console.log("📸 שם קובץ שנשמר:", uniqueFilename);
+        console.log("Saved file name:", uniqueFilename);
         cb(null, uniqueFilename);
     },
 });
 const upload = (0, multer_1.default)({ storage });
-// 📌 מסלול להעלאת תמונה בלבד
 router.post("/upload", upload.single("file"), (req, res) => {
-    console.log("📥 בקשה להעלאת תמונה התקבלה!");
+    console.log("Request to upload a photo has been received!");
     if (!req.file) {
-        console.error("❌ לא הועלה קובץ!");
+        console.error("No file uploaded!");
         res.status(400).json({ message: "No file uploaded" });
         return;
     }
-    console.log("✅ קובץ הועלה בהצלחה:", req.file.filename);
+    console.log("File uploaded successfully:", req.file.filename);
     const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
     res.status(200).json({ imageUrl });
 });

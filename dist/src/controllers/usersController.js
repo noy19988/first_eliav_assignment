@@ -42,7 +42,7 @@ const registerUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             username,
             email: email.toLowerCase(),
             password: hashedPassword,
-            imgUrl: "https://example.com/default-profile.png", // 🔹 קישור לתמונה דיפולטיבית
+            imgUrl: "https://example.com/default-profile.png",
         });
         yield newUser.save();
         res.status(201).json({ message: 'User registered successfully' });
@@ -60,7 +60,6 @@ const googleLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             res.status(400).json({ message: 'No Google token provided' });
             return;
         }
-        // אימות ה-token מול Google
         const ticket = yield client.verifyIdToken({
             idToken: token,
             audience: GOOGLE_CLIENT_ID,
@@ -71,23 +70,19 @@ const googleLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             return;
         }
         const { sub: googleId, email, name, picture } = payload;
-        // חיפוש משתמש קיים לפי email
         let user = yield user_1.default.findOne({ email });
         if (!user) {
-            // יצירת משתמש חדש אם לא קיים
             user = new user_1.default({
                 googleId,
                 username: name,
                 email,
                 imgUrl: picture,
-                password: yield bcrypt_1.default.hash(googleId, 10), // יוצרים סיסמה רנדומלית על בסיס ה-Google ID
+                password: yield bcrypt_1.default.hash(googleId, 10),
                 refreshTokens: [],
             });
             yield user.save();
         }
-        // יצירת טוקנים
         const { token: accessToken, refreshToken } = generateTokens(user._id.toString());
-        // שמירת ה-refresh token במערכת
         user.refreshTokens.push(refreshToken);
         yield user.save();
         res.status(200).json({
@@ -191,11 +186,11 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.refreshToken = refreshToken;
 const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log("🔹 Update user request received!");
-        console.log("🔹 Full Request Body:", req.body);
-        console.log("🔹 Uploaded File:", req.file);
+        console.log("Update user request received!");
+        console.log("Full Request Body:", req.body);
+        console.log("Uploaded File:", req.file);
         if (!req.file) {
-            console.warn("⚠️ No file uploaded! Updating only username.");
+            console.warn("No file uploaded! Updating only username.");
         }
         const updates = {};
         if (req.body.username)
@@ -212,13 +207,13 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                         fs_1.default.unlinkSync(oldImagePath);
                     }
                     catch (err) {
-                        console.error("❌ Failed to delete old image:", err);
+                        console.error("Failed to delete old image:", err);
                     }
                 }
             }
             fs_1.default.renameSync(req.file.path, uploadPath);
             updates.imgUrl = `${req.protocol}://${req.get('host')}/uploads/${newFileName}`;
-            console.log("🔹 Saving image URL in DB:", updates.imgUrl);
+            console.log("Saving image URL in DB:", updates.imgUrl);
         }
         if (Object.keys(updates).length === 0) {
             res.status(400).json({ message: "No data provided for update" });
@@ -261,7 +256,7 @@ const getUserDetails = (req, res) => __awaiter(void 0, void 0, void 0, function*
         res.status(200).json({
             _id: user._id,
             username: user.username,
-            email: user.email, // ✅ הוספת email
+            email: user.email,
             imgUrl: user.imgUrl
         });
     }

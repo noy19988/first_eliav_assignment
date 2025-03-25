@@ -8,10 +8,9 @@ const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const authMiddleware_1 = __importDefault(require("../middleware/authMiddleware"));
 const postsController_1 = require("../controllers/postsController");
-const generateNutritionController_1 = require("../controllers/generateNutritionController"); // 📌 ייבוא הפונקציה
+const generateNutritionController_1 = require("../controllers/generateNutritionController");
 const postsController_2 = require("../controllers/postsController");
 const router = express_1.default.Router();
-// 📌 הגדרת אחסון קבצים
 const storage = multer_1.default.diskStorage({
     destination: (req, file, cb) => {
         cb(null, "public/uploads/");
@@ -21,7 +20,6 @@ const storage = multer_1.default.diskStorage({
     },
 });
 const upload = (0, multer_1.default)({ storage });
-// ✅ יצירת פוסט (כולל העלאת תמונה)
 router.post("/", authMiddleware_1.default, upload.single("image"), postsController_2.createPost);
 /**
  * @swagger

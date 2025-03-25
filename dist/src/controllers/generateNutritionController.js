@@ -14,22 +14,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getPostNutrition = void 0;
 const post_1 = __importDefault(require("../models/post"));
-const geminiService_1 = __importDefault(require("../docs/geminiService")); // 📌 חיבור ל-Gemini
+const geminiService_1 = __importDefault(require("../docs/geminiService")); // Gemini
 const getPostNutrition = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const postId = req.params.id;
-        // 🔹 בדיקה שה-ID תקין
         if (!postId) {
             res.status(400).json({ message: "Post ID is required" });
             return;
         }
-        // 🔹 חיפוש הפוסט במסד הנתונים
         const post = yield post_1.default.findById(postId);
         if (!post) {
             res.status(404).json({ message: "Post not found" });
             return;
         }
-        // 🔥 קריאה ל-Gemini לקבלת מידע תזונתי
         const nutritionalData = yield (0, geminiService_1.default)(post.recipeTitle, post.ingredients, post.instructions);
         if (!nutritionalData) {
             res.status(500).json({ message: "Failed to fetch nutritional values" });
@@ -38,7 +35,7 @@ const getPostNutrition = (req, res) => __awaiter(void 0, void 0, void 0, functio
         res.status(200).json(nutritionalData);
     }
     catch (error) {
-        console.error("❌ שגיאה בשליפת מידע תזונתי:", error);
+        console.error("Error retrieving nutritional information:", error);
         res.status(500).json({ message: "Error fetching nutritional values", error });
     }
 });

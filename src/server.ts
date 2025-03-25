@@ -98,10 +98,12 @@ const startServer = () => {
       console.log(`Dev server running on http://localhost:${port}`);
     });
   } else {
+    console.log("Starting production server...");
     const keyPath = './client-key.pem';
     const certPath = './client-cert.pem';
 
     const httpsExists = fs.existsSync(keyPath) && fs.existsSync(certPath);
+    console.log("Cert exists:", httpsExists);
 
     if (httpsExists) {
       const options = {
@@ -120,6 +122,7 @@ const startServer = () => {
     }
   }
 };
+
 
 export default app; 
 

@@ -36,20 +36,20 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             res.status(404).json({ message: "User not found" });
             return;
         }
-        console.log("📥 יצירת פוסט חדש...");
-        console.log("📂 קובץ שהתקבל:", req.file);
+        console.log("Create a new post...");
+        console.log("File received:", req.file);
         let imageUrl = "";
         if (req.file) {
             imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
-            console.log("✅ URL של התמונה שנשמר:", imageUrl);
+            console.log("URL of the saved image:", imageUrl);
         }
         else {
-            console.log("⚠️ לא הועלתה תמונה!");
+            console.log("No image uploaded!");
         }
         const newPost = new post_1.default({
             recipeTitle,
             category: typeof category === "string" ? JSON.parse(category) : category,
-            imageUrl, // 📌 לוודא שהתמונה נשמרת כראוי
+            imageUrl,
             difficulty,
             prepTime: Number(prepTime),
             ingredients: typeof ingredients === "string" ? JSON.parse(ingredients) : ingredients,
@@ -57,11 +57,11 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             authorId: userId,
         });
         yield newPost.save();
-        console.log("✅ פוסט נשמר בהצלחה:", newPost);
+        console.log("Post saved successfully:", newPost);
         res.status(201).json({ message: "Post created successfully", post: newPost });
     }
     catch (error) {
-        console.error("❌ שגיאה ביצירת פוסט:", error);
+        console.error("Error creating post:", error);
         if (error instanceof Error && error.name === 'ValidationError') {
             res.status(400).json({ message: 'Validation error', error });
         }
@@ -74,7 +74,7 @@ exports.createPost = createPost;
 const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const postId = req.params.id;
-    console.log("🔄 עדכון פוסט עם ID:", postId);
+    console.log("Post update with ID:", postId);
     if (!mongoose_1.default.Types.ObjectId.isValid(postId)) {
         res.status(400).json({ message: "Invalid post ID" });
         return;
@@ -85,18 +85,16 @@ const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             res.status(404).json({ message: "Post not found" });
             return;
         }
-        console.log("📩 נתוני הבקשה שהתקבלו:", req.body);
+        console.log("Request data received:", req.body);
         let imageUrl = post.imageUrl;
         if (req.file) {
-            // מחיקת התמונה הישנה
             if (imageUrl) {
                 const imagePath = path_1.default.join(__dirname, "../../public/uploads", path_1.default.basename(imageUrl));
                 if (fs_1.default.existsSync(imagePath)) {
                     fs_1.default.unlinkSync(imagePath);
-                    console.log(`🗑️ תמונה ישנה נמחקה: ${imagePath}`);
+                    console.log(`Old photo deleted:${imagePath}`);
                 }
             }
-            // שמירת הנתיב החדש
             imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
         }
         const updates = {
@@ -133,17 +131,17 @@ const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 }
             }
         }
-        console.log("🆕 נתונים שנשלחו לעדכון:", updates, mongoUpdates);
+        console.log("Data sent for update:", updates, mongoUpdates);
         const updatedPost = yield post_1.default.findByIdAndUpdate(postId, Object.assign(Object.assign({}, updates), mongoUpdates), { new: true, runValidators: true });
         if (!updatedPost) {
             res.status(500).json({ message: "Failed to update post" });
             return;
         }
-        console.log("✅ פוסט עודכן בהצלחה:", updatedPost);
+        console.log("Post updated successfully:", updatedPost);
         res.status(200).json({ message: "Post updated successfully", post: updatedPost });
     }
     catch (error) {
-        console.error("❌ שגיאה בעדכון הפוסט:", error);
+        console.error("Error updating post:", error);
         res.status(500).json({ message: "Error updating post", error });
     }
 });
@@ -151,7 +149,7 @@ exports.updatePost = updatePost;
 const getAllPosts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const posts = yield post_1.default.find()
-            .populate("authorId", "username imgUrl") // ✅ הוספת פרטי המשתמש (שם ותמונה)
+            .populate("authorId", "username imgUrl")
             .sort({ createdAt: -1 });
         res.status(200).json(posts);
     }
@@ -173,15 +171,14 @@ const deletePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             res.status(404).json({ message: "Post not found" });
             return;
         }
-        // 🔥 מחיקת התמונה מהשרת אם קיימת
         if (post.imageUrl) {
             const imagePath = path_1.default.join(__dirname, "../../public/uploads", path_1.default.basename(post.imageUrl));
             if (fs_1.default.existsSync(imagePath)) {
                 fs_1.default.unlinkSync(imagePath);
-                console.log(`🗑️ תמונה נמחקה: ${imagePath}`);
+                console.log(`Image deleted:${imagePath}`);
             }
             else {
-                console.log(`⚠️ קובץ תמונה לא נמצא: ${imagePath}`);
+                console.log(`Post not found: ${imagePath}`);
             }
         }
         yield post_1.default.findByIdAndDelete(postId);
@@ -271,7 +268,7 @@ const searchAndFilterPosts = (req, res) => __awaiter(void 0, void 0, void 0, fun
                 query.difficulty = normalizedDifficulty;
             }
             else {
-                console.warn(`⚠️ ערך רמת קושי לא חוקי: ${difficulty}`);
+                console.warn(`Difficulty level value is not legal: ${difficulty}`);
             }
         }
         if (category) {
@@ -284,8 +281,8 @@ const searchAndFilterPosts = (req, res) => __awaiter(void 0, void 0, void 0, fun
         res.status(200).json(posts);
     }
     catch (error) {
-        console.error("❌ שגיאה בחיפוש וסינון פוסטים:", error);
-        res.status(500).json({ message: "שגיאה בחיפוש וסינון פוסטים", error });
+        console.error("Error searching and filtering posts:", error);
+        res.status(500).json({ message: "Error searching and filtering posts", error });
     }
 });
 exports.searchAndFilterPosts = searchAndFilterPosts;

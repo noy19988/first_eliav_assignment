@@ -72,7 +72,6 @@ exports.getCommentsByPost = getCommentsByPost;
 const updateComment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        // בדיקה שה-ID תקין
         if (!mongoose_1.default.Types.ObjectId.isValid(req.params.id)) {
             res.status(400).json({ message: 'Invalid comment ID' });
             return;
@@ -86,7 +85,6 @@ const updateComment = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             res.status(404).json({ error: 'Comment not found' });
             return;
         }
-        // בדיקה של הרשאות
         if (comment.author.toString() !== ((_a = req.user) === null || _a === void 0 ? void 0 : _a.userId)) {
             res.status(403).json({ message: 'Unauthorized' });
             return;
@@ -103,7 +101,6 @@ exports.updateComment = updateComment;
 const deleteComment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        // בדיקה שה-ID תקין
         if (!mongoose_1.default.Types.ObjectId.isValid(req.params.id)) {
             res.status(400).json({ message: 'Invalid comment ID' });
             return;

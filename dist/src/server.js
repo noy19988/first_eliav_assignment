@@ -85,9 +85,11 @@ const startServer = () => {
         });
     }
     else {
+        console.log("Starting production server...");
         const keyPath = './client-key.pem';
         const certPath = './client-cert.pem';
         const httpsExists = fs_1.default.existsSync(keyPath) && fs_1.default.existsSync(certPath);
+        console.log("Cert exists:", httpsExists);
         if (httpsExists) {
             const options = {
                 key: fs_1.default.readFileSync(keyPath),

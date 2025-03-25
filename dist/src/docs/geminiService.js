@@ -17,7 +17,6 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = "gemini-1.5-pro-002";
-// 📌 פונקציה לשליפת מידע תזונתי
 const getNutritionalValues = (recipeTitle, ingredients, instructions) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
@@ -34,18 +33,15 @@ const getNutritionalValues = (recipeTitle, ingredients, instructions) => __await
               "sugar": כמות סוכר בגרמים
             }
         `;
-        // 📌 שליחת הבקשה ל-Gemini API
         const response = yield axios_1.default.post(apiUrl, {
             contents: [{ parts: [{ text: prompt }] }]
         });
-        // ✅ שליפת התשובה מ-Gemini API
         let textResponse = response.data.candidates[0].content.parts[0].text;
-        // 🔥 טיפול במקרה שהתשובה עטופה ב-```json ``` והסרתה
         textResponse = textResponse.replace(/```json/g, "").replace(/```/g, "").trim();
-        return JSON.parse(textResponse); // החזרת JSON מסודר
+        return JSON.parse(textResponse);
     }
     catch (error) {
-        console.error("❌ שגיאה בקריאה ל-Gemini API:", error);
+        console.error("Error Gemini API:", error);
         return null;
     }
 });
