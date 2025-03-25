@@ -8,7 +8,6 @@ const router = express.Router();
 
 
 
-// ✅ 1. הגדרת `multer` לאחסון תמונות בתיקיית `public/uploads`
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadPath = path.join(process.cwd(), "public/uploads/");
@@ -22,7 +21,6 @@ const storage = multer.diskStorage({
 
 
   
-  // ✅ 2. פילטר לבדוק שהקובץ הוא תמונה
 const fileFilter = (req: any, file: any, cb: any) => {
     if (file.mimetype.startsWith("image/")) {
         cb(null, true);

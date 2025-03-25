@@ -154,21 +154,13 @@
 <a name='L89'></a><a href='#L89'>89</a>
 <a name='L90'></a><a href='#L90'>90</a>
 <a name='L91'></a><a href='#L91'>91</a>
-<a name='L92'></a><a href='#L92'>92</a>
-<a name='L93'></a><a href='#L93'>93</a>
-<a name='L94'></a><a href='#L94'>94</a>
-<a name='L95'></a><a href='#L95'>95</a>
-<a name='L96'></a><a href='#L96'>96</a>
-<a name='L97'></a><a href='#L97'>97</a>
-<a name='L98'></a><a href='#L98'>98</a>
-<a name='L99'></a><a href='#L99'>99</a>
-<a name='L100'></a><a href='#L100'>100</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<a name='L92'></a><a href='#L92'>92</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -195,13 +187,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -227,9 +213,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -269,14 +253,12 @@ dotenv.config();
 const API_KEY = process.env.SPOONACULAR_API_KEY;
 const BASE_URL = "https://api.spoonacular.com/recipes";
 &nbsp;
-// 📌 ממשק (interface) עבור מתכון בסיסי
 interface Recipe {
     id: number;
     title: string;
     image: string;
 }
 &nbsp;
-// 📌 ממשק (interface) עבור מבנה הנתונים של המתכון המלא
 interface RecipeDetails {
     id: number;
     title: string;
@@ -286,20 +268,16 @@ interface RecipeDetails {
     summary: string;
     instructions: string;
     extendedIngredients: { name: string; amount: number; unit: string }[];
-    nutrition: { nutrients: { name: string; amount: number; unit: string }[] } | null; // ✅ הוספת `null`
+    nutrition: { nutrients: { name: string; amount: number; unit: string }[] } | null; 
 }
 &nbsp;
-// 📌 ממשק עבור תגובת API לחיפוש מתכונים
 interface RecipeApiResponse {
     results: Recipe[];
 }
 &nbsp;
-// 📌 ממשק עבור תגובת API לקבלת פרטי מתכון מלאים
 interface RecipeDetailsResponse extends RecipeDetails {}
 &nbsp;
-/**
- * 📌 מבצע חיפוש מתכונים לפי שם
- */
+&nbsp;
 export const fetchRecipesFromAPI = <span class="fstat-no" title="function not covered" >async (q</span>uery: string): Promise&lt;Recipe[]&gt; =&gt;<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" > {</span></span>
 <span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (!API_KEY) {</span>
 <span class="cstat-no" title="statement not covered" >        throw new Error("Spoonacular API Key is missing. Please set SPOONACULAR_API_KEY in your .env file.");</span>
@@ -320,14 +298,12 @@ export const fetchRecipesFromAPI = <span class="fstat-no" title="function not co
             image: recipe.image,
         }));
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >        console.error("❌ Error fetching recipes from Spoonacular API:", error);</span>
+<span class="cstat-no" title="statement not covered" >        console.error("Error fetching recipes from Spoonacular API:", error);</span>
 <span class="cstat-no" title="statement not covered" >        throw new Error("Failed to fetch recipes.");</span>
     }
 };
 &nbsp;
-/**
- * 📌 מביא את כל הפרטים של מתכון לפי `id`
- */
+&nbsp;
 export const fetchRecipeDetailsFromAPI = <span class="fstat-no" title="function not covered" >async (r</span>ecipeId: number): Promise&lt;RecipeDetails&gt; =&gt;<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" > {</span></span>
 <span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (!API_KEY) {</span>
 <span class="cstat-no" title="statement not covered" >        throw new Error("Spoonacular API Key is missing. Please set SPOONACULAR_API_KEY in your .env file.");</span>
@@ -356,7 +332,7 @@ export const fetchRecipeDetailsFromAPI = <span class="fstat-no" title="function 
             nutrition: data.nutrition || null,
         };
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >        console.error("❌ Error fetching recipe details from Spoonacular API:", error);</span>
+<span class="cstat-no" title="statement not covered" >        console.error("Error fetching recipe details from Spoonacular API:", error);</span>
 <span class="cstat-no" title="statement not covered" >        throw new Error("Failed to fetch recipe details.");</span>
     }
 };
@@ -367,7 +343,7 @@ export const fetchRecipeDetailsFromAPI = <span class="fstat-no" title="function 
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-03-25T01:17:50.188Z
+                at 2025-03-25T09:24:39.377Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

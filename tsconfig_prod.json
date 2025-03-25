@@ -9,9 +9,11 @@
     "strict": true,
     "resolveJsonModule": true
   },
+  
   "lib": [
     "es2015"
   ],
+  
   "exclude": [
     "./tests"
   ]

@@ -16,7 +16,6 @@ interface GeminiResponse {
     }[];
 }
 
-// 📌 פונקציה לשליפת מידע תזונתי
 const getNutritionalValues = async (recipeTitle: string, ingredients: string[], instructions: string[]): Promise<{ calories: number; protein: number; sugar: number } | null> => {
     try {
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
@@ -35,21 +34,18 @@ const getNutritionalValues = async (recipeTitle: string, ingredients: string[], 
             }
         `;
 
-        // 📌 שליחת הבקשה ל-Gemini API
         const response = await axios.post<GeminiResponse>(apiUrl, {
             contents: [{ parts: [{ text: prompt }] }]
         });
 
-        // ✅ שליפת התשובה מ-Gemini API
         let textResponse = response.data.candidates[0].content.parts[0].text;
 
-        // 🔥 טיפול במקרה שהתשובה עטופה ב-```json ``` והסרתה
         textResponse = textResponse.replace(/```json/g, "").replace(/```/g, "").trim();
 
-        return JSON.parse(textResponse); // החזרת JSON מסודר
+        return JSON.parse(textResponse); 
 
     } catch (error) {
-        console.error("❌ שגיאה בקריאה ל-Gemini API:", error);
+        console.error("Error Gemini API:", error);
         return null;
     }
 };

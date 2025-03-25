@@ -18,7 +18,6 @@ let testUser: any;
 beforeAll(async () => {
     await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/local');
 
-    // יצירת משתמש בדיקה
     testUser = await User.create({
         username: 'testuser',
         email: 'testuser@example.com',
@@ -26,7 +25,6 @@ beforeAll(async () => {
     });
     userId = testUser._id.toString();
 
-    // יצירת טוקן
     token = jwt.sign({ userId: userId }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
 });
 
@@ -144,7 +142,6 @@ describe('Posts API Tests', () => {
     });
     
     it('should save a post', async () => {
-        // יצירת פוסט חדש
         const createResponse = await request(app)
             .post('/posts')
             .set('Authorization', `Bearer ${token}`)
@@ -224,7 +221,6 @@ describe('Posts API Tests', () => {
 
 
     it('should handle missing image file during post update', async () => {
-        // יצירת פוסט חדש לפני העדכון
         const createResponse = await request(app)
             .post('/posts')
             .set('Authorization', `Bearer ${token}`)
@@ -575,7 +571,7 @@ describe('Posts API Tests', () => {
         const response = await request(app)
             .post('/posts')
             .set('Authorization', `Bearer ${token}`)
-            .field('recipeTitle', '') // שדה ריק כדי לגרום לשגיאת ולידציה
+            .field('recipeTitle', '') 
             .field('category', JSON.stringify(['test']))
             .field('difficulty', 'easy')
             .field('prepTime', '30')
@@ -603,7 +599,6 @@ describe('Posts API Tests', () => {
     
         expect(createResponse.status).toBe(201);
     
-        // מוחקים את התמונה ידנית כדי לדמות מצב שהיא לא קיימת
         const imagePath = path.join(__dirname, '../public/uploads', path.basename(createResponse.body.post.imageUrl));
         fs.unlinkSync(imagePath);
     
@@ -674,4 +669,126 @@ describe('Posts API Tests', () => {
 
 
 
+    it('should return 401 if user ID is missing during post creation', async () => {
+        const emptyToken = jwt.sign({}, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+    
+        const response = await request(app)
+            .post('/posts')
+            .set('Authorization', `Bearer ${emptyToken}`)
+            .field('recipeTitle', 'Test Recipe')
+            .field('category', JSON.stringify(['test']))
+            .field('difficulty', 'easy')
+            .field('prepTime', '30')
+            .field('ingredients', JSON.stringify(['ingredient1', 'ingredient2']))
+            .field('instructions', JSON.stringify(['instruction1', 'instruction2']))
+            .attach('image', path.join(__dirname, 'test-image.png'));
+    
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe('Unauthorized');
+    });
+
+    it('should return 404 if user not found during post creation', async () => {
+        const fakeUserId = new mongoose.Types.ObjectId().toString();
+        const fakeToken = jwt.sign({ userId: fakeUserId }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+    
+        const response = await request(app)
+            .post('/posts')
+            .set('Authorization', `Bearer ${fakeToken}`)
+            .field('recipeTitle', 'Test Recipe')
+            .field('category', JSON.stringify(['test']))
+            .field('difficulty', 'easy')
+            .field('prepTime', '30')
+            .field('ingredients', JSON.stringify(['ingredient1', 'ingredient2']))
+            .field('instructions', JSON.stringify(['instruction1', 'instruction2']))
+            .attach('image', path.join(__dirname, 'test-image.png'));
+    
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe('User not found');
+    });
+    
+
+
+    it('should replace old image file on post update', async () => {
+        const createResponse = await request(app)
+            .post('/posts')
+            .set('Authorization', `Bearer ${token}`)
+            .field('recipeTitle', 'Image Replace Recipe')
+            .field('category', JSON.stringify(['test']))
+            .field('difficulty', 'easy')
+            .field('prepTime', '30')
+            .field('ingredients', JSON.stringify(['ingredient1', 'ingredient2']))
+            .field('instructions', JSON.stringify(['instruction1', 'instruction2']))
+            .attach('image', path.join(__dirname, 'test-image.png'));
+    
+        const oldImagePath = path.join(__dirname, '../public/uploads', path.basename(createResponse.body.post.imageUrl));
+        expect(fs.existsSync(oldImagePath)).toBe(true);
+    
+        const updateResponse = await request(app)
+            .put(`/posts/${createResponse.body.post._id}`)
+            .set('Authorization', `Bearer ${token}`)
+            .attach('image', path.join(__dirname, 'test-image.png'));
+    
+        const newImagePath = path.join(__dirname, '../public/uploads', path.basename(updateResponse.body.post.imageUrl));
+        expect(fs.existsSync(newImagePath)).toBe(true);
+        expect(fs.existsSync(oldImagePath)).toBe(false);
+    });
+    
+
+    it('should not update likes if liked param is not provided', async () => {
+        const createResponse = await request(app)
+            .post('/posts')
+            .set('Authorization', `Bearer ${token}`)
+            .field('recipeTitle', 'Like Neutral')
+            .field('category', JSON.stringify(['test']))
+            .field('difficulty', 'easy')
+            .field('prepTime', '30')
+            .field('ingredients', JSON.stringify(['ingredient1', 'ingredient2']))
+            .field('instructions', JSON.stringify(['instruction1', 'instruction2']))
+            .attach('image', path.join(__dirname, 'test-image.png'));
+    
+        const updateResponse = await request(app)
+            .put(`/posts/${createResponse.body.post._id}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ recipeTitle: 'Still Neutral' });
+    
+        expect(updateResponse.status).toBe(200);
+        expect(updateResponse.body.post.likes).toBe(0);
+    });
+    
+    it('should return 401 when trying to save post without user ID', async () => {
+        const tokenWithoutUser = jwt.sign({}, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+    
+        const response = await request(app)
+            .put(`/posts/${postId}/save`)
+            .set('Authorization', `Bearer ${tokenWithoutUser}`);
+    
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe('Unauthorized');
+    });
+
+    it('should not like the post if userId is missing', async () => {
+        const tokenWithoutUserId = jwt.sign({}, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+    
+        const createResponse = await request(app)
+            .post('/posts')
+            .set('Authorization', `Bearer ${token}`)
+            .field('recipeTitle', 'Like No User')
+            .field('category', JSON.stringify(['test']))
+            .field('difficulty', 'easy')
+            .field('prepTime', '30')
+            .field('ingredients', JSON.stringify(['ingredient1', 'ingredient2']))
+            .field('instructions', JSON.stringify(['instruction1', 'instruction2']))
+            .attach('image', path.join(__dirname, 'test-image.png'));
+    
+        const updateResponse = await request(app)
+            .put(`/posts/${createResponse.body.post._id}`)
+            .set('Authorization', `Bearer ${tokenWithoutUserId}`)
+            .send({ liked: true });
+    
+        expect(updateResponse.status).toBe(200);
+        expect(updateResponse.body.post.likes).toBe(0);
+    });
+    
+    
+    
 });

@@ -97,16 +97,13 @@
 <a name='L32'></a><a href='#L32'>32</a>
 <a name='L33'></a><a href='#L33'>33</a>
 <a name='L34'></a><a href='#L34'>34</a>
-<a name='L35'></a><a href='#L35'>35</a>
-<a name='L36'></a><a href='#L36'>36</a>
-<a name='L37'></a><a href='#L37'>37</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<a name='L35'></a><a href='#L35'>35</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -118,10 +115,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -135,38 +131,36 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span></td><td class="text"><pre class="prettyprint lang-js">import express, { Request, Response } from "express";
+<span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">import express, { Request, Response } from "express";
 import multer from "multer";
 import path from "path";
 &nbsp;
 const router = express.Router();
 &nbsp;
-// 📌 הגדרת אחסון תמונות
 const storage = multer.diskStorage({
   destination: <span class="fstat-no" title="function not covered" >(r</span>eq, file, cb) =&gt; {
-<span class="cstat-no" title="statement not covered" >    console.log("📁 שמירת קובץ בתיקיית uploads...");</span>
-<span class="cstat-no" title="statement not covered" >    cb(null, "public/uploads/"); </span>// תיקיית העלאה
+<span class="cstat-no" title="statement not covered" >    console.log("Saving a file in the uploads folder...");</span>
+<span class="cstat-no" title="statement not covered" >    cb(null, "public/uploads/"); </span>
   },
   filename: <span class="fstat-no" title="function not covered" >(r</span>eq, file, cb) =&gt; {
     const uniqueFilename = <span class="cstat-no" title="statement not covered" >Date.now() + path.extname(file.originalname);</span>
-<span class="cstat-no" title="statement not covered" >    console.log("📸 שם קובץ שנשמר:", uniqueFilename);</span>
+<span class="cstat-no" title="statement not covered" >    console.log("Saved file name:", uniqueFilename);</span>
 <span class="cstat-no" title="statement not covered" >    cb(null, uniqueFilename);</span>
   },
 });
 &nbsp;
 const upload = multer({ storage });
 &nbsp;
-// 📌 מסלול להעלאת תמונה בלבד
 router.post("/upload", upload.single("file"), <span class="fstat-no" title="function not covered" >(r</span>eq: Request, res: Response): void =&gt; {
-<span class="cstat-no" title="statement not covered" >  console.log("📥 בקשה להעלאת תמונה התקבלה!");</span>
+<span class="cstat-no" title="statement not covered" >  console.log("Request to upload a photo has been received!");</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  <span class="missing-if-branch" title="if path not taken" >I</span>if (!req.file) {</span>
-<span class="cstat-no" title="statement not covered" >    console.error("❌ לא הועלה קובץ!");</span>
+<span class="cstat-no" title="statement not covered" >    console.error("No file uploaded!");</span>
 <span class="cstat-no" title="statement not covered" >    res.status(400).json({ message: "No file uploaded" });</span>
 <span class="cstat-no" title="statement not covered" >    return;</span>
   }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  console.log("✅ קובץ הועלה בהצלחה:", req.file.filename);</span>
+<span class="cstat-no" title="statement not covered" >  console.log("File uploaded successfully:", req.file.filename);</span>
   const imageUrl = <span class="cstat-no" title="statement not covered" >`${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;</span>
 <span class="cstat-no" title="statement not covered" >  res.status(200).json({ imageUrl });</span>
 });
@@ -178,7 +172,7 @@ export default router;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-03-25T01:17:50.188Z
+                at 2025-03-25T09:24:39.377Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

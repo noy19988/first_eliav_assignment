@@ -73,7 +73,7 @@ export const getCommentsByPost = async (req: Request, res: Response): Promise<vo
 
 export const updateComment = async (req: Request, res: Response): Promise<void> => {
     try {
-        // בדיקה שה-ID תקין
+        
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
             res.status(400).json({ message: 'Invalid comment ID' });
             return;
@@ -90,7 +90,7 @@ export const updateComment = async (req: Request, res: Response): Promise<void> 
             return;
         }
 
-        // בדיקה של הרשאות
+    
         if (comment.author.toString() !== req.user?.userId) {
             res.status(403).json({ message: 'Unauthorized' });
             return;
@@ -106,7 +106,7 @@ export const updateComment = async (req: Request, res: Response): Promise<void> 
 
 export const deleteComment = async (req: Request, res: Response): Promise<void> => {
     try {
-        // בדיקה שה-ID תקין
+        
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
             res.status(400).json({ message: 'Invalid comment ID' });
             return;

@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import Post from "../models/post";
 import User from "../models/user";
 import mongoose from "mongoose";
-import { IPost } from "../models/post"; // Add this line to import IPost
-import getNutritionalValues from "../docs/geminiService"; // 📌 חיבור ל-Gemini
+import { IPost } from "../models/post"; 
+import getNutritionalValues from "../docs/geminiService"; 
 import path from "path";
 import fs from "fs";
 
@@ -28,21 +28,21 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
             return;
         }
 
-        console.log("📥 יצירת פוסט חדש...");
-        console.log("📂 קובץ שהתקבל:", req.file);
+        console.log("Create a new post...");
+        console.log("File received:", req.file);
 
         let imageUrl = "";
         if (req.file) {
             imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
-            console.log("✅ URL של התמונה שנשמר:", imageUrl);
+            console.log("URL of the saved image:", imageUrl);
         } else {
-            console.log("⚠️ לא הועלתה תמונה!");
+            console.log("No image uploaded!");
         }
 
         const newPost = new Post({
             recipeTitle,
             category: typeof category === "string" ? JSON.parse(category) : category,
-            imageUrl, // 📌 לוודא שהתמונה נשמרת כראוי
+            imageUrl, 
             difficulty,
             prepTime: Number(prepTime),
             ingredients: typeof ingredients === "string" ? JSON.parse(ingredients) : ingredients,
@@ -51,11 +51,11 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
         });
 
         await newPost.save();
-        console.log("✅ פוסט נשמר בהצלחה:", newPost);
+        console.log("Post saved successfully:", newPost);
 
         res.status(201).json({ message: "Post created successfully", post: newPost });
     } catch (error) {
-        console.error("❌ שגיאה ביצירת פוסט:", error);
+        console.error("Error creating post:", error);
       
         if (error instanceof Error && error.name === 'ValidationError') {
           res.status(400).json({ message: 'Validation error', error });
@@ -69,7 +69,7 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
 
 export const updatePost = async (req: Request, res: Response): Promise<void> => {
     const postId = req.params.id;
-    console.log("🔄 עדכון פוסט עם ID:", postId);
+    console.log("Post update with ID:", postId);
 
     if (!mongoose.Types.ObjectId.isValid(postId)) {
         res.status(400).json({ message: "Invalid post ID" });
@@ -83,19 +83,17 @@ export const updatePost = async (req: Request, res: Response): Promise<void> => 
             return;
         }
 
-        console.log("📩 נתוני הבקשה שהתקבלו:", req.body);
+        console.log("Request data received:", req.body);
 
         let imageUrl = post.imageUrl;
         if (req.file) {
-            // מחיקת התמונה הישנה
             if (imageUrl) {
                 const imagePath = path.join(__dirname, "../../public/uploads", path.basename(imageUrl));
                 if (fs.existsSync(imagePath)) {
                     fs.unlinkSync(imagePath);
-                    console.log(`🗑️ תמונה ישנה נמחקה: ${imagePath}`);
+                    console.log(`Old photo deleted:${imagePath}`);
                 }
             }
-            // שמירת הנתיב החדש
             imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
         }
 
@@ -135,7 +133,7 @@ export const updatePost = async (req: Request, res: Response): Promise<void> => 
             }
         }
 
-        console.log("🆕 נתונים שנשלחו לעדכון:", updates, mongoUpdates);
+        console.log("Data sent for update:", updates, mongoUpdates);
 
         const updatedPost = await Post.findByIdAndUpdate(postId, { ...updates, ...mongoUpdates }, { new: true, runValidators: true });
 
@@ -144,10 +142,10 @@ export const updatePost = async (req: Request, res: Response): Promise<void> => 
             return;
         }
 
-        console.log("✅ פוסט עודכן בהצלחה:", updatedPost);
+        console.log("Post updated successfully:", updatedPost);
         res.status(200).json({ message: "Post updated successfully", post: updatedPost });
     } catch (error) {
-        console.error("❌ שגיאה בעדכון הפוסט:", error);
+        console.error("Error updating post:", error);
         res.status(500).json({ message: "Error updating post", error });
     }
 };
@@ -157,7 +155,7 @@ export const updatePost = async (req: Request, res: Response): Promise<void> => 
 export const getAllPosts = async (req: Request, res: Response) => {
     try {
         const posts = await Post.find()
-            .populate("authorId", "username imgUrl") // ✅ הוספת פרטי המשתמש (שם ותמונה)
+            .populate("authorId", "username imgUrl") 
             .sort({ createdAt: -1 });
 
         res.status(200).json(posts);
@@ -184,14 +182,13 @@ export const deletePost = async (req: Request, res: Response): Promise<void> => 
             return;
         }
 
-        // 🔥 מחיקת התמונה מהשרת אם קיימת
         if (post.imageUrl) {
             const imagePath = path.join(__dirname, "../../public/uploads", path.basename(post.imageUrl));
             if (fs.existsSync(imagePath)) {
                 fs.unlinkSync(imagePath);
-                console.log(`🗑️ תמונה נמחקה: ${imagePath}`);
+                console.log(`Image deleted:${imagePath}`);
             } else {
-                console.log(`⚠️ קובץ תמונה לא נמצא: ${imagePath}`);
+                console.log(`Post not found: ${imagePath}`);
             }
         }
 
@@ -291,7 +288,7 @@ export const searchAndFilterPosts = async (req: Request, res: Response) => {
             if (['easy', 'medium', 'hard'].includes(normalizedDifficulty)) {
                 query.difficulty = normalizedDifficulty;
             } else {
-                console.warn(`⚠️ ערך רמת קושי לא חוקי: ${difficulty}`);
+                console.warn(`Difficulty level value is not legal: ${difficulty}`);
             }
         }
 
@@ -306,8 +303,8 @@ export const searchAndFilterPosts = async (req: Request, res: Response) => {
 
         res.status(200).json(posts);
     } catch (error) {
-        console.error("❌ שגיאה בחיפוש וסינון פוסטים:", error);
-        res.status(500).json({ message: "שגיאה בחיפוש וסינון פוסטים", error });
+        console.error("Error searching and filtering posts:", error);
+        res.status(500).json({ message: "Error searching and filtering posts", error });
     }
 };
 

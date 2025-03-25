@@ -6,14 +6,12 @@ dotenv.config();
 const API_KEY = process.env.SPOONACULAR_API_KEY;
 const BASE_URL = "https://api.spoonacular.com/recipes";
 
-// 📌 ממשק (interface) עבור מתכון בסיסי
 interface Recipe {
     id: number;
     title: string;
     image: string;
 }
 
-// 📌 ממשק (interface) עבור מבנה הנתונים של המתכון המלא
 interface RecipeDetails {
     id: number;
     title: string;
@@ -23,20 +21,16 @@ interface RecipeDetails {
     summary: string;
     instructions: string;
     extendedIngredients: { name: string; amount: number; unit: string }[];
-    nutrition: { nutrients: { name: string; amount: number; unit: string }[] } | null; // ✅ הוספת `null`
+    nutrition: { nutrients: { name: string; amount: number; unit: string }[] } | null; 
 }
 
-// 📌 ממשק עבור תגובת API לחיפוש מתכונים
 interface RecipeApiResponse {
     results: Recipe[];
 }
 
-// 📌 ממשק עבור תגובת API לקבלת פרטי מתכון מלאים
 interface RecipeDetailsResponse extends RecipeDetails {}
 
-/**
- * 📌 מבצע חיפוש מתכונים לפי שם
- */
+
 export const fetchRecipesFromAPI = async (query: string): Promise<Recipe[]> => {
     if (!API_KEY) {
         throw new Error("Spoonacular API Key is missing. Please set SPOONACULAR_API_KEY in your .env file.");
@@ -57,14 +51,12 @@ export const fetchRecipesFromAPI = async (query: string): Promise<Recipe[]> => {
             image: recipe.image,
         }));
     } catch (error) {
-        console.error("❌ Error fetching recipes from Spoonacular API:", error);
+        console.error("Error fetching recipes from Spoonacular API:", error);
         throw new Error("Failed to fetch recipes.");
     }
 };
 
-/**
- * 📌 מביא את כל הפרטים של מתכון לפי `id`
- */
+
 export const fetchRecipeDetailsFromAPI = async (recipeId: number): Promise<RecipeDetails> => {
     if (!API_KEY) {
         throw new Error("Spoonacular API Key is missing. Please set SPOONACULAR_API_KEY in your .env file.");
@@ -93,7 +85,7 @@ export const fetchRecipeDetailsFromAPI = async (recipeId: number): Promise<Recip
             nutrition: data.nutrition || null,
         };
     } catch (error) {
-        console.error("❌ Error fetching recipe details from Spoonacular API:", error);
+        console.error("Error fetching recipe details from Spoonacular API:", error);
         throw new Error("Failed to fetch recipe details.");
     }
 };

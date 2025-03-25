@@ -3,7 +3,7 @@ import multer from "multer";
 import path from "path";
 import authMiddleware from '../middleware/authMiddleware';
 import { getPostById } from '../controllers/postsController';
-import { getPostNutrition } from "../controllers/generateNutritionController"; // 📌 ייבוא הפונקציה
+import { getPostNutrition } from "../controllers/generateNutritionController"; 
 
 import {
     searchAndFilterPosts,
@@ -17,7 +17,6 @@ import {
 
 const router: Router = express.Router();
 
-// 📌 הגדרת אחסון קבצים
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
       cb(null, "public/uploads/");
@@ -29,7 +28,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// ✅ יצירת פוסט (כולל העלאת תמונה)
 router.post("/", authMiddleware, upload.single("image"), createPost);
 
 

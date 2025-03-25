@@ -152,7 +152,6 @@ describe('User Controller Tests', () => {
 
         const mockRenameSync = jest.spyOn(fs, 'renameSync');
         mockRenameSync.mockImplementationOnce(() => {
-            // Simulate successful rename
         });
 
         const mockUnlinkSync = jest.spyOn(fs, 'unlinkSync');
@@ -204,7 +203,7 @@ describe('User Controller Tests', () => {
         const response = await request(app)
             .post('/users/logout')
             .send({});
-        expect(response.status).toBe(400); // שינוי ל-400
+        expect(response.status).toBe(400); 
         expect(response.body.message).toBe('Refresh token is required');
     });
 
@@ -287,23 +286,21 @@ describe('User Controller Tests', () => {
     });
     
     test('should allow updating user with empty profile image field', async () => {
-        // שמור את פרטי המשתמש המקוריים
         const originalResponse = await request(app)
             .get(`/users/${userId}`)
             .set('Authorization', `Bearer ${accessToken}`);
     
         const originalImgUrl = originalResponse.body.imgUrl;
     
-        // שלח בקשת PUT עם שם משתמש תקין ושדה תמונה ריק
         const response = await request(app)
             .put(`/users/${userId}`)
             .set('Authorization', `Bearer ${accessToken}`)
             .send({
-                username: 'validUsername', // שם משתמש תקין (לפחות 2 תווים)
+                username: 'validUsername', 
             });
     
         expect(response.status).toBe(200);
-        expect(response.body.imgUrl).toBe(originalImgUrl); // ודא ש-imgUrl לא השתנה
+        expect(response.body.imgUrl).toBe(originalImgUrl); 
     });
     
 
@@ -324,13 +321,11 @@ describe('User Controller Tests', () => {
     expect(response.body.imgUrl).toBeDefined();
     expect(response.body.imgUrl).toContain('/uploads/');
 
-    // בדיקה שהקובץ אכן נשמר בשרת (מתוקן)
     const imageUrl = response.body.imgUrl;
-    const imageName = imageUrl.substring(imageUrl.lastIndexOf('/') + 1); // Extract filename
+    const imageName = imageUrl.substring(imageUrl.lastIndexOf('/') + 1); 
     const savedImagePath = path.join('public', 'uploads', imageName);
     expect(fs.existsSync(savedImagePath)).toBe(true);
 
-    // ניקוי קובץ התמונה
     fs.unlinkSync(savedImagePath);
     });
 
@@ -414,7 +409,6 @@ describe('User Controller Tests', () => {
  
 
     test('should fail getUserDetails if an error occurs', async () => {
-        // Force an error by mocking the findById function
         jest.spyOn(userModel, 'findById').mockImplementationOnce(() => {
             throw new Error('Database error');
         });
@@ -426,7 +420,6 @@ describe('User Controller Tests', () => {
         expect(response.status).toBe(500);
         expect(response.body.message).toBe('Error retrieving user details');
 
-        // Restore the original findById function
         jest.spyOn(userModel, 'findById').mockRestore();
     });
 
@@ -484,7 +477,7 @@ describe('User Controller Tests', () => {
     test('should fail googleLogin with invalid google token', async () => {
         const response = await request(app)
             .post('/users/google-login')
-            .send({ token: 'invalidGoogleToken' }); // טוקן לא תקין
+            .send({ token: 'invalidGoogleToken' });
         expect(response.status).toBe(400);
         expect(response.body.message).toBe('Invalid Google token');
     });
@@ -499,7 +492,6 @@ describe('User Controller Tests', () => {
     });
 
     test('should fail getUserDetails if an error occurs', async () => {
-        // mocking User.findById to throw an error
         const findByIdMock = jest.spyOn(userModel, 'findById');
         findByIdMock.mockImplementationOnce(() => {
             throw new Error('Test Error');
@@ -511,7 +503,7 @@ describe('User Controller Tests', () => {
         expect(response.status).toBe(500);
         expect(response.body.message).toBe('Error retrieving user details');
 
-        findByIdMock.mockRestore(); // Restore the original implementation
+        findByIdMock.mockRestore(); 
     });
 
     test('should handle registration error', async () => {

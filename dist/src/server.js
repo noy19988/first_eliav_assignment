@@ -1,4 +1,5 @@
 "use strict";
+// dana-elazra-208228528-noy-amsalem-207277823
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -14,15 +15,13 @@ const fs_1 = __importDefault(require("fs"));
 const https_1 = __importDefault(require("https"));
 const http_1 = __importDefault(require("http"));
 const path_1 = __importDefault(require("path"));
-// Load environment variables
 dotenv_1.default.config();
-// Check required env vars
 if (!process.env.MONGO_URI) {
-    throw new Error("❌ MONGO_URI is not defined in your .env file");
+    throw new Error("MONGO_URI is not defined in your .env file");
 }
 const domainBase = process.env.DOMAIN_BASE;
 if (!domainBase) {
-    throw new Error("❌ DOMAIN_BASE is not defined in your .env file");
+    throw new Error("DOMAIN_BASE is not defined in your .env file");
 }
 const port = process.env.PORT || 3000;
 const httpsPort = process.env.HTTPS_PORT || 443;
@@ -38,13 +37,10 @@ app.use((0, cors_1.default)({
     allowedHeaders: "Content-Type,Authorization",
     credentials: true
 }));
-// Multer setup (for uploads)
 const upload = (0, multer_1.default)({ dest: "public/uploads/" });
-// Static files
 app.use("/uploads", express_1.default.static("public/uploads"));
-app.use(express_1.default.static(path_1.default.join(__dirname, '../public'))); // ✅ הוספנו את זה - הגשת ה-front מהשורש
+app.use(express_1.default.static(path_1.default.join(__dirname, '../public')));
 app.use(express_1.default.static(publicPath));
-// Swagger
 const swaggerOptions = {
     swaggerDefinition: {
         openapi: '3.0.0',
@@ -62,7 +58,6 @@ const swaggerOptions = {
 };
 const swaggerDocs = (0, swagger_jsdoc_1.default)(swaggerOptions);
 app.use('/rest-api', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerDocs));
-// Routes
 const fileRoutes_1 = __importDefault(require("./routes/fileRoutes"));
 const recipeRoutes_1 = __importDefault(require("./routes/recipeRoutes"));
 const usersRoutes_1 = __importDefault(require("./routes/usersRoutes"));
@@ -77,18 +72,16 @@ app.use('/comment', commentsRoutes_1.default);
 app.get('/*', (req, res) => {
     res.sendFile(path_1.default.join(process.cwd(), 'public', 'index.html'));
 });
-// MongoDB Connection
 mongoose_1.default.connect(process.env.MONGO_URI)
-    .then(() => console.log('✅ Connected to MongoDB'))
+    .then(() => console.log('Connected to MongoDB'))
     .catch((err) => {
-    console.error('❌ Error connecting to MongoDB:', err.message);
+    console.error('Error connecting to MongoDB:', err.message);
     process.exit(1);
 });
-// Start Server
 const startServer = () => {
     if (process.env.NODE_ENV !== 'production') {
         http_1.default.createServer(app).listen(port, () => {
-            console.log(`🚀 Dev server running on http://localhost:${port}`);
+            console.log(`Dev server running on http://localhost:${port}`);
         });
     }
     else {
@@ -101,19 +94,19 @@ const startServer = () => {
                 cert: fs_1.default.readFileSync(certPath),
             };
             https_1.default.createServer(options, app).listen(httpsPort, () => {
-                console.log(`🔐 Production server running on ${domainBase}`);
+                console.log(`Production server running on ${domainBase}`);
             });
         }
         else {
-            console.warn('⚠️ HTTPS certificates not found. Falling back to HTTP.');
+            console.warn('HTTPS certificates not found. Falling back to HTTP.');
             http_1.default.createServer(app).listen(port, () => {
-                console.log(`🚀 Production server running on http://${domainBase}`);
+                console.log(`Production server running on http://${domainBase}`);
             });
         }
     }
 };
-exports.default = app; // מייצא את ה-app עצמו (לקונסטרקט טסטים)
+exports.default = app;
 if (require.main === module) {
-    startServer(); // רק אם מפעילים את הקובץ ישירות - מריץ את השרת
+    startServer();
 }
 //# sourceMappingURL=server.js.map

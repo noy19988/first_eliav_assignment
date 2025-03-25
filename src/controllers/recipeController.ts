@@ -1,9 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { fetchRecipesFromAPI, fetchRecipeDetailsFromAPI } from "../docs/recipeApi";
 
-/**
- * 📌 חיפוש מתכונים לפי שם
- */
+
 export const searchRecipes = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const query = req.query.query as string;
@@ -19,9 +17,7 @@ export const searchRecipes = async (req: Request, res: Response, next: NextFunct
     }
 };
 
-/**
- * 📌 שליפת כל הפרטים של מתכון לפי IDn
- */
+
 export const getRecipeDetails = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const recipeId = parseInt(req.params.id, 10);
@@ -32,7 +28,6 @@ export const getRecipeDetails = async (req: Request, res: Response, next: NextFu
   
       const recipeDetails = await fetchRecipeDetailsFromAPI(recipeId);
   
-      // הדפסת כל פרמטרי המתכון
       console.log("Fetched recipe details:");
       console.log("Title:", recipeDetails.title);
       console.log("Image:", recipeDetails.image);
@@ -41,13 +36,11 @@ export const getRecipeDetails = async (req: Request, res: Response, next: NextFu
       console.log("Summary:", recipeDetails.summary);
       console.log("Instructions:", recipeDetails.instructions);
   
-      // הדפסת רכיבים
       console.log("Ingredients:");
       recipeDetails.extendedIngredients.forEach(ingredient => {
         console.log(`- ${ingredient.name}: ${ingredient.amount} ${ingredient.unit}`);
       });
   
-      // הדפסת תזונה אם קיימת
       if (recipeDetails.nutrition) {
         console.log("Nutrition:");
         recipeDetails.nutrition.nutrients.forEach(nutrient => {
@@ -57,7 +50,6 @@ export const getRecipeDetails = async (req: Request, res: Response, next: NextFu
         console.log("No nutrition information available.");
       }
   
-      // שליחת המידע חזרה ל-Frontend
       res.json({ recipeDetails });
     } catch (error) {
       next(error);
