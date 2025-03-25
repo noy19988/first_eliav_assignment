@@ -1,3 +1,6 @@
+// dana-elazra-208228528-noy-amsalem-207277823
+
+
 import dotenv from 'dotenv';
 import express, { Application } from 'express';
 import mongoose from 'mongoose';
@@ -10,17 +13,15 @@ import https from 'https';
 import http from 'http';
 import path from 'path';
 
-// Load environment variables
 dotenv.config();
 
-// Check required env vars
 if (!process.env.MONGO_URI) {
-  throw new Error("❌ MONGO_URI is not defined in your .env file");
+  throw new Error("MONGO_URI is not defined in your .env file");
 }
 
 const domainBase = process.env.DOMAIN_BASE;
 if (!domainBase) {
-  throw new Error("❌ DOMAIN_BASE is not defined in your .env file");
+  throw new Error("DOMAIN_BASE is not defined in your .env file");
 }const port = process.env.PORT || 3000;
 const httpsPort = process.env.HTTPS_PORT || 443;
 const publicPath = path.join(process.cwd(), 'public');
@@ -39,15 +40,12 @@ app.use(cors({
   credentials: true
 }));
 
-// Multer setup (for uploads)
 const upload = multer({ dest: "public/uploads/" });
 
-// Static files
 app.use("/uploads", express.static("public/uploads"));
-app.use(express.static(path.join(__dirname, '../public'))); // ✅ הוספנו את זה - הגשת ה-front מהשורש
+app.use(express.static(path.join(__dirname, '../public'))); 
 app.use(express.static(publicPath));
 
-// Swagger
 const swaggerOptions = {
   swaggerDefinition: {
     openapi: '3.0.0',
@@ -67,7 +65,6 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/rest-api', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-// Routes
 import fileRoutes from './routes/fileRoutes';
 import recipeRoutes from './routes/recipeRoutes';
 import usersRoutes from './routes/usersRoutes';
@@ -86,21 +83,19 @@ app.get('/*', (req, res) => {
     res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
   });
   
-// MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ Connected to MongoDB'))
+  .then(() => console.log('Connected to MongoDB'))
   .catch((err) => {
-    console.error('❌ Error connecting to MongoDB:', err.message);
+    console.error('Error connecting to MongoDB:', err.message);
     process.exit(1);
   });
 
 
 
-// Start Server
 const startServer = () => {
   if (process.env.NODE_ENV !== 'production') {
     http.createServer(app).listen(port, () => {
-      console.log(`🚀 Dev server running on http://localhost:${port}`);
+      console.log(`Dev server running on http://localhost:${port}`);
     });
   } else {
     const keyPath = './client-key.pem';
@@ -115,19 +110,19 @@ const startServer = () => {
       };
 
       https.createServer(options, app).listen(httpsPort, () => {
-        console.log(`🔐 Production server running on ${domainBase}`);
+        console.log(`Production server running on ${domainBase}`);
       });
     } else {
-      console.warn('⚠️ HTTPS certificates not found. Falling back to HTTP.');
+      console.warn('HTTPS certificates not found. Falling back to HTTP.');
       http.createServer(app).listen(port, () => {
-        console.log(`🚀 Production server running on http://${domainBase}`);
+        console.log(`Production server running on http://${domainBase}`);
       });
     }
   }
 };
 
-export default app; // מייצא את ה-app עצמו (לקונסטרקט טסטים)
+export default app; 
 
 if (require.main === module) {
-  startServer(); // רק אם מפעילים את הקובץ ישירות - מריץ את השרת
+  startServer(); 
 }
